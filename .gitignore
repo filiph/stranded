@@ -1,0 +1,6 @@
+# Files and directories created by pub
+.packages
+.pub/
+packages
+pubspec.lock
+

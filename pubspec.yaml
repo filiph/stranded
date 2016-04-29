@@ -1,0 +1,9 @@
+name: stranded
+version: 0.0.1
+description: A simple console application.
+dependencies:
+  collection: any
+  quiver: any
+
+dev_dependencies:
+  test: '>=0.12.0 <0.13.0'
