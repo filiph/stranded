@@ -20,6 +20,14 @@ class WorldState {
         .map((otherRecord) => new ActionRecord.from(otherRecord)));
   }
 
+  ActorMap<num> getActorScores() {
+    final result = new ActorMap<num>();
+    for (var a in actors) {
+      result[a] = a.scoreWorld(this);
+    }
+    return result;
+  }
+
   bool operator ==(o) => o is WorldState && hashCode == o.hashCode;
 
   @override

@@ -29,7 +29,6 @@ class PlanConsequence {
   PlanConsequence.initial(WorldState world)
       : this(world, null, null, 1.0, isInitial: true);
 
-
   @override
   int get hashCode => hashObjects([
         world,
@@ -46,5 +45,13 @@ class PlanConsequence {
 
   toString() =>
       "PlanConsequence<${world.hashCode}, $world, $action, $probability, "
-          "$order, ${isSuccess ? 'isSuccess' : ''}>";
+      "$order, ${isSuccess ? 'isSuccess' : ''}>";
+}
+
+/// A container for statistics for a [PlanConsequence].
+class ConsequenceStats {
+  final num score;
+  final num cumulativeProbability;
+  final int order;
+  const ConsequenceStats(this.score, this.cumulativeProbability, this.order);
 }

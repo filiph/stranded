@@ -1,5 +1,7 @@
 library stranded.action_record;
 
+import 'package:quiver/core.dart';
+
 import 'package:stranded/actor.dart';
 
 /// A record of some event action that transpired.
@@ -63,4 +65,12 @@ class ActionRecord {
 
   ActionRecord._(this.time, this.description, this.performers, this.knownTo,
       this.benefits);
+
+  @override
+  int get hashCode {
+    return hash4(
+        time, description, hashObjects(performers), hashObjects(knownTo));
+  }
+
+  bool operator ==(o) => o is ActionRecord && hashCode == o.hashCode;
 }

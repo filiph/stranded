@@ -11,6 +11,11 @@ class ActorPlanner {
   /// We will stop processing a plan path once its leaf node has lower
   /// cumulative probability than this.
   static const minimumCumulativeProbability = 0.05;
+
+  /// Only consequences with cumulative probability over this threshold
+  /// will be considered for best cases.
+  static const num bestCaseProbabilityThreshold = 0.3;
+
   final int actorId;
   final PlanConsequence _initial;
 
@@ -46,9 +51,9 @@ class ActorPlanner {
     var initialScore = currentActor.scoreWorld(_initial.world);
 
     for (var action in actions) {
-      var consequences = _getConsequencesOfOrder(_initial, action, maxOrder);
+      var consequenceStats = _getConsequenceStats(_initial, action, maxOrder);
 
-      firstActionScores[action] = combineScores(consequences, initialScore);
+      firstActionScores[action] = combineScores(consequenceStats, initialScore);
     }
 
     _resultsReady = true;
@@ -58,66 +63,72 @@ class ActorPlanner {
   ///
   /// TODO: allow to personalize this (for example, optimistic characters
   /// only take `isSuccess == true` consequences into account).
-  num combineScores(Iterable<PlanConsequence> consequences, num initialScore) {
+  num combineScores(Iterable<ConsequenceStats> stats, num initialScore) {
     var uplifts = <num>[];
 
-    for (var consequence in consequences.where((c) => c.isSuccess)) {
-      var currentActor =
-          consequence.world.actors.singleWhere((a) => a.id == actorId);
-      var uplift = currentActor.scoreWorld(consequence.world) - initialScore;
-      uplift *= consequence.cumulativeProbability;
+    ConsequenceStats _bestCase;
+
+    for (var consequence in stats) {
+      if (consequence.cumulativeProbability > bestCaseProbabilityThreshold) {
+        if (_bestCase == null) {
+          _bestCase = consequence;
+        } else if (consequence.score > _bestCase.score) {
+          _bestCase = consequence;
+        }
+      }
+
+      var uplift = (consequence.score - initialScore) *
+          consequence.cumulativeProbability;
       uplifts.add(uplift);
     }
 
-//    int reverseOrder(num a, num b) => -a.compareTo(b);
-//
-//    uplifts.sort(reverseOrder);
-//    uplifts = uplifts.take(100).toList(growable: false);
+    var average = uplifts.fold(0, (a, b) => a + b) / uplifts.length;
+    var best = _bestCase == null ? 0 : _bestCase.score / _bestCase.order;
 
-    return uplifts.fold(0, (a, b) => a + b) / uplifts.length;
+    return best + average;
   }
 
-  /// Returns the consequences of a given [initial] state after applying
-  /// [firstAction] and then [n] other steps.
-  Set<PlanConsequence> _getConsequencesOfOrder(
-      PlanConsequence initial, ActorAction firstAction, int n) {
+  /// Returns the stats for consequences of a given [initial] state after
+  /// applying [firstAction] and then up to [maxOrder] other steps.
+  Iterable<ConsequenceStats> _getConsequenceStats(
+      PlanConsequence initial, ActorAction firstAction, int maxOrder) sync* {
     var currentActor = initial.world.actors.singleWhere((a) => a.id == actorId);
 
     var open = new Queue<PlanConsequence>();
     final closed = new Set<WorldState>();
 
-    final results = new Set<PlanConsequence>();
-
     if (!firstAction.isApplicable(currentActor, initial.world)) {
-      return new Set.identity();
+      return;
     }
 
-    var initialWorldCopy = new WorldState.from(initial.world);
-    open.addAll(firstAction.apply(currentActor, initial, initialWorldCopy));
+    var initialWorldHash = initial.world.hashCode;
+    for (var firstConsequence
+        in firstAction.apply(currentActor, initial, initial.world)) {
+      if (initial.world.hashCode != initialWorldHash) {
+        throw new StateError("Action ${firstAction} modified world state when "
+            "producing $firstConsequence.");
+      }
+      open.add(firstConsequence);
+    }
 
     while (open.isNotEmpty) {
       var current = open.removeFirst();
 
-      if (current.order == n) {
-        results.add(current);
-        closed.add(current.world);
-        continue;
-      }
-
-      if (current.order > n) break;
+      if (current.order >= maxOrder) break;
 
       // Actor object changes during planning, so we need to look up via id.
       var currentActor =
           current.world.actors.singleWhere((a) => a.id == actorId);
 
-      bool hasConsequence = false;
+      var score = currentActor.scoreWorld(current.world);
+      yield new ConsequenceStats(
+          score, current.cumulativeProbability, current.order);
 
       for (ActorAction action in actions) {
         if (!action.isApplicable(currentActor, current.world)) continue;
         var worldCopy = new WorldState.from(current.world);
         var consequences = action.apply(currentActor, current, worldCopy);
         for (PlanConsequence next in consequences) {
-          hasConsequence = true;
           planConsequencesComputed++;
 
           // Ignore consequences that have a tiny probability of happening.
@@ -126,7 +137,7 @@ class ActorPlanner {
             continue;
           }
 
-          // Ignore consequences that have already been
+          // Ignore consequences that have already been visited.
           if (closed.contains(next.world)) {
             continue;
           }
@@ -135,14 +146,7 @@ class ActorPlanner {
         }
       }
 
-      if (!hasConsequence) {
-        // Add to results because this consequence is a final one (end game?).
-        results.add(current);
-      }
-
       closed.add(current.world);
     }
-
-    return results;
   }
 }

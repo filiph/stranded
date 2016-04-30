@@ -4,23 +4,44 @@ import 'package:quiver/core.dart';
 import 'package:stranded/world.dart';
 import 'package:collection/collection.dart';
 
-class ActorRelationshipMap extends CanonicalizedMap<int, Actor, Scale> {
-  ActorRelationshipMap()
-      : super((Actor key) => key.id, isValidKey: (key) => key != null);
-
-  factory ActorRelationshipMap.from(ActorRelationshipMap other) {
-    var map = new ActorRelationshipMap();
-    other.forEach((Actor key, Scale value) => map[key] = new Scale.from(value));
-    return map;
-  }
+class ActorMap<T> extends CanonicalizedMap<int, Actor, T> {
+  ActorMap() : super((Actor key) => key.id, isValidKey: (key) => key != null);
 
   @override
   int get hashCode {
     return hashObjects(values.toList(growable: false));
   }
 
-  bool operator ==(o) => o is ActorRelationshipMap && hashCode == o.hashCode;
+  bool operator ==(o) => o is ActorMap && hashCode == o.hashCode;
 }
+
+class ActorRelationshipMap extends ActorMap<Scale> {
+  ActorRelationshipMap();
+
+  factory ActorRelationshipMap.from(ActorRelationshipMap other) {
+    var map = new ActorRelationshipMap();
+    other.forEach((Actor key, Scale value) => map[key] = new Scale.from(value));
+    return map;
+  }
+}
+
+//class ActorRelationshipMap extends CanonicalizedMap<int, Actor, Scale> {
+//  ActorRelationshipMap()
+//      : super((Actor key) => key.id, isValidKey: (key) => key != null);
+//
+//  factory ActorRelationshipMap.from(ActorRelationshipMap other) {
+//    var map = new ActorRelationshipMap();
+//    other.forEach((Actor key, Scale value) => map[key] = new Scale.from(value));
+//    return map;
+//  }
+//
+//  @override
+//  int get hashCode {
+//    return hashObjects(values.toList(growable: false));
+//  }
+//
+//  bool operator ==(o) => o is ActorRelationshipMap && hashCode == o.hashCode;
+//}
 
 class Actor {
   /// Everything else can change, but Actor's [id] can't.
@@ -38,8 +59,9 @@ class Actor {
 
   Actor._(this.id, this.name, this.gratitudeDislike);
 
-  Actor.from(Actor other) : this._(other.id, other.name,
-      new ActorRelationshipMap.from(other.gratitudeDislike));
+  Actor.from(Actor other)
+      : this._(other.id, other.name,
+            new ActorRelationshipMap.from(other.gratitudeDislike));
 
   @override
   int get hashCode {
