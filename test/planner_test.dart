@@ -43,7 +43,7 @@ void main() {
 
 Iterable<DebugActorAction> defineActions() {
   var sleep = new DebugActorAction("sleep", (_, __) => true,
-      (actor, world) => world, (actor, world) => world, 1.0);
+      (actor, world) => world, null, 1.0);
 
   void renameSuccess(Actor actor, WorldState world) {
     actor.name = "Richard";
@@ -53,7 +53,7 @@ Iterable<DebugActorAction> defineActions() {
       "rename",
       (Actor actor, _) => actor.name != "Richard",
       renameSuccess,
-      (actor, world) => world,
+      null,
       0.9);
 
   void killSuccess(Actor actor, WorldState world) {
@@ -69,7 +69,7 @@ Iterable<DebugActorAction> defineActions() {
       "random kill",
       (actor, WorldState world) => world.actors.any((a) => a != actor),
       killSuccess,
-      (actor, world) => world,
+      null /* TODO: add bad pokus o vrazdu */,
       0.5);
 
   List<DebugActorAction> flatters = [];
@@ -83,7 +83,7 @@ Iterable<DebugActorAction> defineActions() {
         "random flatter #$i",
         (actor, WorldState world) => world.actors.any((a) => a != actor),
         flatterSuccess,
-        (actor, world) => world,
+        null,
         0.8);
 
     flatters.add(flatter);
