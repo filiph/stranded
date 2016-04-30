@@ -10,7 +10,7 @@ import 'package:stranded/world.dart';
 class ActorPlanner {
   /// We will stop processing a plan path once its leaf node has lower
   /// cumulative probability than this.
-  static const minimumCumulativeProbability = 0.0;
+  static const minimumCumulativeProbability = 0.05;
   final int actorId;
   final PlanConsequence _initial;
 
