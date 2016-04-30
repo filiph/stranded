@@ -3,6 +3,7 @@ library stranded.action;
 import 'package:stranded/actor.dart';
 import 'package:stranded/world.dart';
 import 'package:stranded/plan_consequence.dart';
+import 'package:stranded/action_record.dart';
 
 //  XXX ACTION GENERATORS THAT YIELD DIFFERENT ACTIONS (different targets, mostly) - EAT action generates Eat<Fish>, Eat<Grass> etc.
 // Maybe: Actions types - withOthers ("when the evening's at end"), without ("meanwhile"), elsewhere ("")
@@ -26,6 +27,8 @@ abstract class ActorAction {
     }
   }
 
+  ActionRecord generateSuccessRecord(Actor actor, WorldState world);
+  ActionRecord generateFailureRecord(Actor actor, WorldState world);
 
   /// Changes the [world].
   void applyFailure(Actor actor, WorldState world);

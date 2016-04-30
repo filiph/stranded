@@ -19,11 +19,12 @@ import 'package:stranded/actor.dart';
 /// - applying all `ActionRecord`s that the subject knows about that the other
 ///   person is responsible for
 
-
 int _extractId(Actor actor) => actor.id;
 
 class ActionRecord {
   final String description;
+
+  final int time;
 
   /// The actors responsible for this action, or an empty set if this is an
   /// environmental event (monkeys steal stuff).
@@ -46,10 +47,20 @@ class ActionRecord {
   /// their identity, not their state at the time of action.
   final Map<int, num> benefits;
 
-  ActionRecord(this.description, Iterable<Actor> performers,
+  ActionRecord(int time, String description, Iterable<Actor> performers,
       Iterable<Actor> knownTo, Map<Actor, num> benefits)
-      : performers = performers.map(_extractId),
-        knownTo = knownTo.map(_extractId),
-        benefits = new Map.fromIterables(
-            benefits.keys.map(_extractId), benefits.values);
+      : this._(
+            time,
+            description,
+            performers.map(_extractId),
+            knownTo.map(_extractId),
+            new Map.fromIterables(
+                benefits.keys.map(_extractId), benefits.values));
+
+  ActionRecord.from(ActionRecord other)
+      : this._(other.time, other.description, new Set.from(other.performers),
+            new Set.from(other.knownTo), new Map.from(other.benefits));
+
+  ActionRecord._(this.time, this.description, this.performers, this.knownTo,
+      this.benefits);
 }
