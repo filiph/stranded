@@ -1,6 +1,5 @@
 library stranded.action_record;
 
-import 'package:collection/collection.dart';
 import 'package:stranded/actor.dart';
 
 /// A record of some event action that transpired.

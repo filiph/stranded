@@ -1,7 +1,5 @@
 library stranded.location;
 
-import 'package:collection/collection.dart';
-
 class Location {
   final Set<LocationResource> resources;
 

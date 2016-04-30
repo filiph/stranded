@@ -1,6 +1,5 @@
 library stranded.world;
 
-import 'package:collection/collection.dart';
 import 'package:quiver/core.dart';
 
 import 'package:stranded/actor.dart';

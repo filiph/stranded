@@ -2,9 +2,7 @@ library stranded.actor;
 
 import 'package:quiver/core.dart';
 import 'package:stranded/world.dart';
-import 'dart:collection';
 import 'package:collection/collection.dart';
-import 'package:stranded/location.dart';
 
 class ActorRelationshipMap extends CanonicalizedMap<int, Actor, Scale> {
   ActorRelationshipMap()
