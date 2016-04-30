@@ -2,148 +2,147 @@ library stranded.planner;
 
 import 'dart:collection';
 
-import 'package:quiver/core.dart';
 import 'package:stranded/action.dart';
 import 'package:stranded/actor.dart';
+import 'package:stranded/plan_consequence.dart';
 import 'package:stranded/world.dart';
 
 class ActorPlanner {
   /// We will stop processing a plan path once its leaf node has lower
-  /// probability than this.
-  static const minimumCumulativeProbability = 0.01;
+  /// cumulative probability than this.
+  static const minimumCumulativeProbability = 0.0;
   final int actorId;
-  final WorldState initialWorld;
   final PlanConsequence _initial;
 
   final Set<ActorAction> actions;
   int planConsequencesComputed = 0;
   bool _resultsReady = false;
 
-  PlanConsequence _best;
+  final Map<ActorAction, num> firstActionScores = new Map();
 
   ActorPlanner(Actor actor, WorldState initialWorld, this.actions)
       : actorId = actor.id,
-        initialWorld = initialWorld,
         _initial = new PlanConsequence.initial(initialWorld);
-
-//  XXX START HERE get score distribution of order 0 actions (instead of walking backwards from "best", try to find out which actions give best results on average)
 
   ActorAction getBest() {
     assert(_resultsReady);
-    assert(_best != null);
 
-    PlanConsequence current = _best;
-    // Walk backwards
-    while (current.previous != _initial) {
-      current = current.previous;
+    num bestScore = firstActionScores.values.reduce((a, b) => a > b ? a : b);
+
+    for (var action in firstActionScores.keys) {
+      if (firstActionScores[action] == bestScore) {
+        return action;
+      }
     }
 
-    return current.action;
+    throw new StateError("No best action found in $firstActionScores");
   }
 
-  /// Searches the state space via breadth first search.
-  ///
-  /// The search stops when paths of [maxOrder] are reached (e.g., 3 actions
-  /// ahead for `maxOrder: 3`). Paths are pruned when the cumulative probability
-  /// of a particular consequence is below [minimumCumulativeProbability].
   void plan({int maxOrder: 3}) {
-    num bestScore;
-
-    final open = new Queue<PlanConsequence>();
-    final closed = new Set<WorldState>();
-    open.add(_initial);
+    firstActionScores.clear();
 
     var currentActor =
         _initial.world.actors.singleWhere((a) => a.id == actorId);
     var initialScore = currentActor.scoreWorld(_initial.world);
 
+    for (var action in actions) {
+      var consequences = _getConsequencesOfOrder(_initial, action, maxOrder);
+
+      firstActionScores[action] = combineScores(consequences, initialScore);
+    }
+
+    _resultsReady = true;
+  }
+
+  /// Computes the combined score for a bunch of consequences.
+  ///
+  /// TODO: allow to personalize this (for example, optimistic characters
+  /// only take `isSuccess == true` consequences into account).
+  num combineScores(Iterable<PlanConsequence> consequences, num initialScore) {
+    var uplifts = <num>[];
+
+    for (var consequence in consequences.where((c) => c.isSuccess)) {
+      var currentActor =
+          consequence.world.actors.singleWhere((a) => a.id == actorId);
+      var uplift = currentActor.scoreWorld(consequence.world) - initialScore;
+      uplift *= consequence.cumulativeProbability;
+      uplifts.add(uplift);
+    }
+
+//    int reverseOrder(num a, num b) => -a.compareTo(b);
+//
+//    uplifts.sort(reverseOrder);
+//    uplifts = uplifts.take(100).toList(growable: false);
+
+    return uplifts.fold(0, (a, b) => a + b) / uplifts.length;
+  }
+
+  /// Returns the consequences of a given [initial] state after applying
+  /// [firstAction] and then [n] other steps.
+  Set<PlanConsequence> _getConsequencesOfOrder(
+      PlanConsequence initial, ActorAction firstAction, int n) {
+    var currentActor = initial.world.actors.singleWhere((a) => a.id == actorId);
+
+    var open = new Queue<PlanConsequence>();
+    final closed = new Set<WorldState>();
+
+    final results = new Set<PlanConsequence>();
+
+    if (!firstAction.isApplicable(currentActor, initial.world)) {
+      return new Set.identity();
+    }
+
+    var initialWorldCopy = new WorldState.from(initial.world);
+    open.addAll(firstAction.apply(currentActor, initial, initialWorldCopy));
+
     while (open.isNotEmpty) {
       var current = open.removeFirst();
-      if (current.order >= maxOrder) break;
+
+      if (current.order == n) {
+        results.add(current);
+        closed.add(current.world);
+        continue;
+      }
+
+      if (current.order > n) break;
 
       // Actor object changes during planning, so we need to look up via id.
-      currentActor = current.world.actors.singleWhere((a) => a.id == actorId);
+      var currentActor =
+          current.world.actors.singleWhere((a) => a.id == actorId);
+
+      bool hasConsequence = false;
 
       for (ActorAction action in actions) {
         if (!action.isApplicable(currentActor, current.world)) continue;
         var worldCopy = new WorldState.from(current.world);
         var consequences = action.apply(currentActor, current, worldCopy);
         for (PlanConsequence next in consequences) {
+          hasConsequence = true;
           planConsequencesComputed++;
+
+          // Ignore consequences that have a tiny probability of happening.
           var cumulativeProbability = next.cumulativeProbability;
           if (cumulativeProbability < minimumCumulativeProbability) {
             continue;
           }
-          // print(next);
+
+          // Ignore consequences that have already been
           if (closed.contains(next.world)) {
             continue;
           }
+
           open.add(next);
-          // TODO: actors have 'reasoningStyle' that affects how they score
-          //       enum { OPTIMISTIC, ANALYTICAL, HOLISTIC_AVERAGE }
-          var uplift = currentActor.scoreWorld(next.world) - initialScore;
-          var score = initialScore + uplift * cumulativeProbability;
-          if (bestScore == null || score > bestScore) {
-            _best = next;
-            bestScore = score;
-          }
         }
+      }
+
+      if (!hasConsequence) {
+        // Add to results because this consequence is a final one (end game?).
+        results.add(current);
       }
 
       closed.add(current.world);
     }
 
-    _resultsReady = true;
+    return results;
   }
-}
-
-class PlanConsequence {
-  final WorldState world;
-  final PlanConsequence previous;
-  final ActorAction action;
-  final probability;
-
-  final bool isInitial;
-  final bool isFailure;
-  final bool isSuccess;
-
-  /// How far are we from initial world state.
-  final int order;
-
-  PlanConsequence(
-      this.world, PlanConsequence previous, this.action, this.probability,
-      {this.isInitial: false, this.isFailure: false, this.isSuccess: false})
-      : order = previous == null ? 0 : previous.order + 1,
-        previous = previous;
-
-  PlanConsequence.initial(WorldState world)
-      : this(world, null, null, 1.0, isInitial: true);
-
-  num get cumulativeProbability => probabilities.fold(1, (a, b) => a * b);
-
-  @override
-  int get hashCode => hashObjects([
-        world,
-        previous,
-        action,
-        probability,
-        order,
-        isInitial,
-        isFailure,
-        isSuccess
-      ]);
-
-  Iterable<num> get probabilities sync* {
-    yield probability;
-    PlanConsequence current = this;
-    while (current.previous != null) {
-      yield current.probability;
-      current = current.previous;
-    }
-  }
-
-  bool operator ==(o) => o is PlanConsequence && hashCode == o.hashCode;
-
-  toString() =>
-      "PlanConsequence<${world.hashCode}, $world, $action, $probability, ${previous?.world?.hashCode}, $order, ${isSuccess ? 'isSuccess' : ''}>";
 }
