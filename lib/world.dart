@@ -20,12 +20,28 @@ class WorldState {
         .map((otherRecord) => new ActionRecord.from(otherRecord)));
   }
 
-  ActorMap<num> getActorScores() {
-    final result = new ActorMap<num>();
-    for (var a in actors) {
-      result[a] = a.scoreWorld(this);
+  /// Checks integrity of the world.
+  ///
+  /// Run this just after you set up the world with actors and before you
+  /// do any simulation.
+  void validate() {
+    void setsAreSame(Set a, Set b, String type) {
+      var aButNotB = a.difference(b);
+      if (aButNotB.isNotEmpty) {
+        throw new StateError(
+            "Bad world: $type set $a has members $aButNotB that are not in $b");
+      }
+      var bButNotA = b.difference(a);
+      if (bButNotA.isNotEmpty) {
+        throw new StateError(
+            "Bad world: $type set $b has members $bButNotA that are not in $a");
+      }
     }
-    return result;
+
+    for (var actor in actors) {
+      setsAreSame(actor.safetyFear.keys.toSet(),
+          actors.where((a) => a != actor).toSet(), "safetyFear");
+    }
   }
 
   bool operator ==(o) => o is WorldState && hashCode == o.hashCode;

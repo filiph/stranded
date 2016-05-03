@@ -1,8 +1,8 @@
 library stranded.action_record;
 
 import 'package:quiver/core.dart';
-
 import 'package:stranded/actor.dart';
+import 'package:stranded/world.dart';
 
 /// A record of some event action that transpired.
 ///
@@ -14,7 +14,8 @@ import 'package:stranded/actor.dart';
 /// SpecialEvent (monkeys steal food) is a type of ActorAction (where
 /// `performers == null`) that also get ActionRecords.
 ///
-/// Everyone's stance towards everyone else is computed by:
+/// Everyone's stance (gratitude <-> dislike) towards everyone else is computed
+/// by:
 ///
 /// - getting default stance (0.0)
 /// - applying personal bias (optimist, pesimist)
@@ -28,12 +29,18 @@ class ActionRecord {
 
   final int time;
 
-  /// The actors responsible for this action, or an empty set if this is an
-  /// environmental event (monkeys steal stuff).
+  /// The [Actor.id] of the protagonist. The single person responsible for
   ///
-  /// Actors are represented by their [Actor.id] since we only care about
-  /// their identity, not their state at the time of action.
-  final Set<int> performers;
+  /// When set to `null`, it means "environment" is to blame.
+  ///
+  /// The actor is represented by his/her [Actor.id] since we only care about
+  /// his/her identity, not his/her state at the time of action.
+  final int protagonist;
+
+  /// The other actors responsible for this ActionRecord.
+  ///
+  /// IMPLEMENTATION DETAIL: Currently, there can be no accomplices.
+  final Set<int> accomplices = new Set<int>();
 
   /// The actors who know about this.
   ///
@@ -47,24 +54,27 @@ class ActionRecord {
   ///
   /// Actors are represented by their [Actor.id] since we only care about
   /// their identity, not their state at the time of action.
-  final Map<int, num> benefits;
+  final ActorMap<num> scoreChange;
 
-  ActionRecord(int time, String description, Iterable<Actor> performers,
-      Iterable<Actor> knownTo, Map<Actor, num> benefits)
+  ActionRecord(int time, String description, Actor protagonist,
+      Iterable<Actor> knownTo, ActorMap<num> scoreChanges)
       : this._(
             time,
             description,
-            performers.map(_extractId),
-            knownTo.map(_extractId),
-            new Map.fromIterables(
-                benefits.keys.map(_extractId), benefits.values));
+            protagonist.id,
+            knownTo.map(_extractId).toSet(),
+            new ActorMap<num>.from(scoreChanges));
 
   ActionRecord.from(ActionRecord other)
-      : this._(other.time, other.description, new Set.from(other.performers),
-            new Set.from(other.knownTo), new Map.from(other.benefits));
+      : this._(
+            other.time,
+            other.description,
+            other.protagonist,
+            new Set<int>.from(other.knownTo),
+            new ActorMap<num>.from(other.scoreChange));
 
-  ActionRecord._(this.time, this.description, this.performers, this.knownTo,
-      this.benefits);
+  ActionRecord._(this.time, this.description, this.protagonist, this.knownTo,
+      this.scoreChange);
 
   @override
   int get hashCode {
@@ -72,5 +82,81 @@ class ActionRecord {
         time, description, hashObjects(performers), hashObjects(knownTo));
   }
 
+  /// The actors responsible for this action, or an empty set if this is an
+  /// environmental event (monkeys steal stuff).
+  Set<int> get performers =>
+      protagonist == null ? new Set.identity() : new Set.from([protagonist]);
+
   bool operator ==(o) => o is ActionRecord && hashCode == o.hashCode;
+
+  String toString() => "ActionRecord<$description, $protagonist>";
 }
+
+class ActionRecordBuilder {
+  Actor _protagonist;
+  String _description;
+  ActorMap<num> _actorScoresBefore;
+  KnownToMode _knownToMode = KnownToMode.ALL;
+  WorldState _afterWorld;
+
+  String get description => _description;
+
+  set description(String value) {
+    _description = value;
+  }
+
+  KnownToMode get knownToMode => _knownToMode;
+  set knownToMode(KnownToMode value) {
+    _knownToMode = value;
+  }
+
+  Actor get protagonist => _protagonist;
+  set protagonist(Actor value) {
+    _protagonist = value;
+  }
+
+  ActionRecord build() {
+    assert(_protagonist != null);
+    assert(_actorScoresBefore != null);
+    assert(_knownToMode != null);
+    assert(_afterWorld != null);
+
+    Set<Actor> knownTo;
+
+    switch (_knownToMode) {
+      case KnownToMode.ALL:
+        knownTo = _afterWorld.actors;
+        break;
+      case KnownToMode.PROTAGONIST_ONLY:
+        knownTo = new Set<Actor>.from(<Actor>[protagonist]);
+        break;
+      default:
+        throw new UnimplementedError("Mode $_knownToMode not implemented");
+    }
+
+    ActorMap<num> scoreChanges = new ActorMap<num>();
+    var actorsBeforeAndAfter = _afterWorld.actors
+        .where((actor) => _actorScoresBefore.keys.contains(actor));
+    for (Actor actor in actorsBeforeAndAfter) {
+      scoreChanges[actor] =
+          actor.scoreWorld(_afterWorld) - _actorScoresBefore[actor];
+    }
+
+    // TODO: get time from world
+    return new ActionRecord._(null, _description, _protagonist.id,
+        knownTo.map(_extractId).toSet(), scoreChanges);
+  }
+
+  void markAfterAction(WorldState world) {
+    _afterWorld = world;
+  }
+
+  void markBeforeAction(WorldState world) {
+    _actorScoresBefore = new ActorMap<num>();
+    for (var a in world.actors) {
+      _actorScoresBefore[a] = a.scoreWorld(world);
+    }
+  }
+}
+
+enum KnownToMode { ALL, PROTAGONIST_ONLY, CUSTOM }

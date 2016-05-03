@@ -2,6 +2,7 @@
 // is governed by a BSD-style license that can be found in the LICENSE file.
 
 import 'package:stranded/action.dart';
+import 'package:stranded/action_record.dart';
 import 'package:stranded/actor.dart';
 import 'package:stranded/planner.dart';
 import 'package:stranded/world.dart';
@@ -17,12 +18,12 @@ void main() {
       filip = new Actor(1, "Filip");
       var ted = new Actor(100, "Ted");
       var helen = new Actor(500, "Helen");
-      filip.gratitudeDislike[ted] = new Scale(-0.1);
-      filip.gratitudeDislike[helen] = new Scale(0.5);
-      ted.gratitudeDislike[filip] = new Scale(-0.5);
-      ted.gratitudeDislike[helen] = new Scale(0.0);
-      helen.gratitudeDislike[filip] = new Scale(0.2);
-      helen.gratitudeDislike[ted] = new Scale(-0.5);
+      filip.safetyFear[ted] = new Scale(-0.1);
+      filip.safetyFear[helen] = new Scale(0.5);
+      ted.safetyFear[filip] = new Scale(-0.5);
+      ted.safetyFear[helen] = new Scale(0.0);
+      helen.safetyFear[filip] = new Scale(0.2);
+      helen.safetyFear[ted] = new Scale(-0.5);
 
       world = new WorldState(new Set.from([filip, ted, helen]));
 
@@ -42,27 +43,32 @@ void main() {
 }
 
 Iterable<DebugActorAction> defineActions() {
-  var sleep = new DebugActorAction("sleep", (_, __) => true,
-      (actor, world) => world, null, 1.0);
+  var sleep = new DebugActorAction(
+      "sleep", (_, __) => true, (actor, world) => world, null, 1.0);
 
   void renameSuccess(Actor actor, WorldState world) {
     actor.name = "Richard";
   }
 
-  var rename = new DebugActorAction(
-      "rename",
-      (Actor actor, _) => actor.name != "Richard",
-      renameSuccess,
-      null,
-      0.9);
+  var rename = new DebugActorAction("rename",
+      (Actor actor, _) => actor.name != "Richard", renameSuccess, null, 0.9);
 
   void killSuccess(Actor actor, WorldState world) {
+    var recBuilder = new ActionRecordBuilder()
+      ..protagonist = actor
+      ..markBeforeAction(world);
     var target = world.actors.where((a) => a != actor).first;
+    recBuilder.description = "$actor killed $target";
     world.actors.remove(target);
-    for (var other in world.actors.toList()) {
-      if (other == actor) continue;
-      other.gratitudeDislike[actor].decrease(0.9);
+
+//    XXX START HERE: create an ActionRecord instead of the below
+    for (var other in world.actors) {
+      if (other.id == actor.id) continue;
+      other.safetyFear[actor].decrease(0.9);
     }
+
+    recBuilder.markAfterAction(world);
+    world.actionRecords.add(recBuilder.build());
   }
 
   var kill = new DebugActorAction(
@@ -75,8 +81,16 @@ Iterable<DebugActorAction> defineActions() {
   List<DebugActorAction> flatters = [];
   for (int i = 1; i <= 20; i++) {
     void flatterSuccess(Actor actor, WorldState world) {
+      var recBuilder = new ActionRecordBuilder()
+        ..protagonist = actor
+        ..markBeforeAction(world);
       var target = world.actors.where((a) => a != actor).first;
-      target.gratitudeDislike[actor].increase(i / 20);
+      recBuilder.description = "$actor flattered $target";
+
+      target.safetyFear[actor].increase(i / 20);
+
+      recBuilder.markAfterAction(world);
+      world.actionRecords.add(recBuilder.build());
     }
 
     var flatter = new DebugActorAction(

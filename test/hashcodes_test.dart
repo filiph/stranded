@@ -14,12 +14,12 @@ void main() {
       var filip = new Actor(1, "Filip");
       var ted = new Actor(100, "Ted");
       var helen = new Actor(500, "Helen");
-      filip.gratitudeDislike[ted] = new Scale(-0.1);
-      filip.gratitudeDislike[helen] = new Scale(0.5);
-      ted.gratitudeDislike[filip] = new Scale(-0.5);
-      ted.gratitudeDislike[helen] = new Scale(0.0);
-      helen.gratitudeDislike[filip] = new Scale(0.2);
-      helen.gratitudeDislike[ted] = new Scale(-0.5);
+      filip.safetyFear[ted] = new Scale(-0.1);
+      filip.safetyFear[helen] = new Scale(0.5);
+      ted.safetyFear[filip] = new Scale(-0.5);
+      ted.safetyFear[helen] = new Scale(0.0);
+      helen.safetyFear[filip] = new Scale(0.2);
+      helen.safetyFear[ted] = new Scale(-0.5);
 
       world = new WorldState(new Set.from([filip, ted, helen]));
     });
@@ -45,13 +45,13 @@ void main() {
 
     test("hashCode changes on relationship changes (increase)", () {
       int hash = world.hashCode;
-      world.actors.first.gratitudeDislike[world.actors.last].increase(0.5);
+      world.actors.first.safetyFear[world.actors.last].increase(0.5);
       expect(world.hashCode, isNot(hash));
     });
 
     test("hashCode changes on relationship changes (decrease)", () {
       int hash = world.hashCode;
-      world.actors.last.gratitudeDislike[world.actors.first].decrease(0.1);
+      world.actors.last.safetyFear[world.actors.first].decrease(0.1);
       expect(world.hashCode, isNot(hash));
     });
   });

@@ -3,9 +3,16 @@ library stranded.actor;
 import 'package:quiver/core.dart';
 import 'package:stranded/world.dart';
 import 'package:collection/collection.dart';
+import 'package:stranded/action_record.dart';
 
 class ActorMap<T> extends CanonicalizedMap<int, Actor, T> {
   ActorMap() : super((Actor key) => key.id, isValidKey: (key) => key != null);
+
+  factory ActorMap.from(ActorMap other) {
+    var map = new ActorMap<T>();
+    other.forEach((Actor key, T value) => map[key] = value);
+    return map;
+  }
 
   @override
   int get hashCode {
@@ -47,7 +54,18 @@ class Actor {
   /// Everything else can change, but Actor's [id] can't.
   final int id;
   String name;
-  final ActorRelationshipMap gratitudeDislike;
+
+  /// How safe does [this] Actor feel in the presence of the different other
+  /// actors.
+  ///
+  /// For example, a Bob's failed attempt at murder of Alice will lead to Alice
+  /// feeling much less safe near Bob. This will greatly decrease her world
+  /// score, btw, so this automatically makes an attempted murder something
+  /// people don't appreciate.
+  final ActorRelationshipMap safetyFear;
+
+  // TODO: loveIndifference
+  // other feelings?
 
   /// The resources this actor knows about.
   ///
@@ -57,28 +75,47 @@ class Actor {
 
   Actor(int id, String name) : this._(id, name, new ActorRelationshipMap());
 
-  Actor._(this.id, this.name, this.gratitudeDislike);
+  Actor._(this.id, this.name, this.safetyFear);
 
   Actor.from(Actor other)
       : this._(other.id, other.name,
-            new ActorRelationshipMap.from(other.gratitudeDislike));
+            new ActorRelationshipMap.from(other.safetyFear));
 
   @override
   int get hashCode {
-    return hash3(id, name, hashObjects(gratitudeDislike.values));
+    return hash3(id, name, hashObjects(safetyFear.values));
   }
 
   bool operator ==(o) => o is Actor && id == o.id;
 
   num scoreWorld(WorldState world) {
     // XXX make subclasses or mixins like EgoisticActor, etc.
-    // Current implementation would just love to be alone.
-    //return 10 - world.actors.length;
 
-    Iterable<Actor> others = world.actors.where((a) => a != this);
-    Iterable<Scale> attitudes = others.map((a) => a.gratitudeDislike[this]);
-    num sum = attitudes.fold(0, (prev, el) => prev + el.value);
-    return sum / world.actors.length;
+    // People want to feel safe.
+    Iterable<Scale> safetyFeelings = safetyFear.values;
+    num safetySum = safetyFeelings.fold(0, (prev, el) => prev + el.value);
+    num safety = safetySum / world.actors.length;
+
+    // People want to be useful.
+    var otherActors = world.actors.where((a) => a.id != id);
+    var othersGratitude = otherActors.map((a) => a.getGratitude(this, world));
+    num gratitude = othersGratitude.fold(0, (a, b) => a + b);
+
+    return safety + gratitude;
+  }
+
+  /// Computes gratitude towards [other] given the state of the [world].
+  ///
+  /// Goes through action records.
+  num getGratitude(Actor other, WorldState world) {
+    var othersActions = world.actionRecords.where(
+        (rec) => rec.knownTo.contains(id) && rec.protagonist == other.id);
+
+    var scoreChanges = othersActions
+        .map((rec) => rec.scoreChange[this])
+        .where((value) => value != null);
+    num cumulativeScoreChange = scoreChanges.fold(0, (a, b) => a + b);
+    return cumulativeScoreChange;
   }
 
   toString() => "Actor<$name>";
