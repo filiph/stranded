@@ -9,7 +9,13 @@ class Location {
   /// `1.0` means the location is known and reachable from the start.
   final num accessibility;
 
-  Location(this.accessibility, this.resources);
+  final bool found; // Make things simple: all people know or none.
+
+  Location(this.accessibility, this.resources, this.found);
+
+  Location.duplicate(Location other)
+      : this(other.accessibility,
+            new Set<LocationResource>.from(other.resources), other.found);
 }
 
 /// Examples of resources are: crab hunting grounds, plane wreckage, pond,

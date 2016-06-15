@@ -65,7 +65,7 @@ class ActionRecord {
             knownTo.map(_extractId).toSet(),
             new ActorMap<num>.from(scoreChanges));
 
-  ActionRecord.from(ActionRecord other)
+  ActionRecord.duplicate(ActionRecord other)
       : this._(
             other.time,
             other.description,

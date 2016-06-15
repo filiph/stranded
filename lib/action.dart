@@ -16,7 +16,7 @@ abstract class ActorAction {
     assert(successChance != null);
 
     if (successChance > 0) {
-      var worldCopy = new WorldState.from(world);
+      var worldCopy = new WorldState.duplicate(world);
       var actorInWorldCopy =
           worldCopy.actors.singleWhere((a) => a.id == actor.id);
       applySuccess(actorInWorldCopy, worldCopy);
@@ -31,7 +31,7 @@ abstract class ActorAction {
         return;
       }
 
-      var worldCopy = new WorldState.from(world);
+      var worldCopy = new WorldState.duplicate(world);
       var actorInWorldCopy =
           worldCopy.actors.singleWhere((a) => a.id == actor.id);
       applyFailure(actorInWorldCopy, worldCopy);

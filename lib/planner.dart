@@ -40,7 +40,8 @@ class ActorPlanner {
       }
     }
 
-    throw new StateError("No best action found in $firstActionScores");
+    throw new StateError("No best action found in $firstActionScores "
+        "(bestScore = $bestScore)");
   }
 
   void plan({int maxOrder: 3}) {
@@ -53,7 +54,15 @@ class ActorPlanner {
     for (var action in actions) {
       var consequenceStats = _getConsequenceStats(_initial, action, maxOrder);
 
-      firstActionScores[action] = combineScores(consequenceStats, initialScore);
+      if (consequenceStats.isEmpty) {
+        // This action isn't even possible in [_initial.world].
+        firstActionScores[action] = double.NEGATIVE_INFINITY;
+        continue;
+      }
+
+      var score = combineScores(consequenceStats, initialScore);
+
+      firstActionScores[action] = score;
     }
 
     _resultsReady = true;
@@ -126,7 +135,7 @@ class ActorPlanner {
 
       for (ActorAction action in actions) {
         if (!action.isApplicable(currentActor, current.world)) continue;
-        var worldCopy = new WorldState.from(current.world);
+        var worldCopy = new WorldState.duplicate(current.world);
         var consequences = action.apply(currentActor, current, worldCopy);
         for (PlanConsequence next in consequences) {
           planConsequencesComputed++;

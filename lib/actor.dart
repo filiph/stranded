@@ -4,6 +4,8 @@ import 'package:quiver/core.dart';
 import 'package:stranded/world.dart';
 import 'package:collection/collection.dart';
 import 'package:stranded/action_record.dart';
+import 'package:stranded/item.dart';
+import 'package:stranded/util/duplicate_set.dart';
 
 class ActorMap<T> extends CanonicalizedMap<int, Actor, T> {
   ActorMap() : super((Actor key) => key.id, isValidKey: (key) => key != null);
@@ -25,7 +27,7 @@ class ActorMap<T> extends CanonicalizedMap<int, Actor, T> {
 class ActorRelationshipMap extends ActorMap<Scale> {
   ActorRelationshipMap();
 
-  factory ActorRelationshipMap.from(ActorRelationshipMap other) {
+  factory ActorRelationshipMap.duplicate(ActorRelationshipMap other) {
     var map = new ActorRelationshipMap();
     other.forEach((Actor key, Scale value) => map[key] = new Scale.from(value));
     return map;
@@ -64,6 +66,8 @@ class Actor {
   /// people don't appreciate.
   final ActorRelationshipMap safetyFear;
 
+  final Set<Item> items;
+
   // TODO: loveIndifference
   // other feelings?
 
@@ -73,24 +77,45 @@ class Actor {
   /// TODO: uncomment and implement
 //  final UnmodifiableSetView<LocationResource> knownResources;
 
-  Actor(int id, String name) : this._(id, name, new ActorRelationshipMap());
+  Actor(int id, String name)
+      : this._(id, name, new ActorRelationshipMap(), new Set());
 
-  Actor._(this.id, this.name, this.safetyFear);
+  Actor._(this.id, this.name, this.safetyFear, this.items);
 
-  Actor.from(Actor other)
-      : this._(other.id, other.name,
-            new ActorRelationshipMap.from(other.safetyFear));
+  factory Actor.duplicate(Actor other) {
+    var items =
+        duplicateSet/*<Item>*/(other.items, (item) => new Item.duplicate(item));
+    var actor = new Actor._(other.id, other.name,
+        new ActorRelationshipMap.duplicate(other.safetyFear), items);
+    return actor;
+  }
 
   @override
   int get hashCode {
-    return hash3(id, name, hashObjects(safetyFear.values));
+    return hash4(id, name, hashObjects(safetyFear.values), hashObjects(items));
   }
 
   bool operator ==(o) => o is Actor && id == o.id;
 
-  num scoreWorld(WorldState world) {
-    // XXX make subclasses or mixins like EgoisticActor, etc.
-
+  /// Scores the state of the [world] in the eyes of [this] Actor.
+  ///
+  /// This is the "objective function" that the actors try to optimize.
+  /// Presumably, different characters will score the same situation
+  /// differently, and of course the same world will be scored differently
+  /// depending on who scores it (if Bob has all the bananas and Alice is
+  /// starving, then Bob's score will be higher than Alice's).
+  ///
+  /// By default, actor scores the world according to what he or she currently
+  /// knows about it. Setting [allKnowing] to `true` will override that
+  /// behavior. This is important when gauging the effects of [ActionRecord].
+  /// If Bob destroys a fountain in a location not known to Alice, we still want
+  /// the action record to mark this as something that Alice won't like when
+  /// someone tells her about it later. So, when building the ActionRecord,
+  /// we override the fact that Alice didn't know about the location.
+  ///
+  /// TODO: let author define the actor's character and use it here (optimist,
+  ///       egoist, altruist, ...)
+  num scoreWorld(WorldState world, {bool allKnowing: false}) {
     // People want to feel safe.
     Iterable<Scale> safetyFeelings = safetyFear.values;
     num safetySum = safetyFeelings.fold(0, (prev, el) => prev + el.value);
@@ -99,7 +124,20 @@ class Actor {
     // People want to be useful.
     var otherActors = world.actors.where((a) => a.id != id);
     var othersGratitude = otherActors.map((a) => a.getGratitude(this, world));
-    num gratitude = othersGratitude.fold(0, (a, b) => a + b);
+    num gratitudeSum = othersGratitude.fold(0, (a, b) => a + b);
+    num gratitude = gratitudeSum / world.actors.length;
+
+    // People want luxury
+    Map<ItemType, num> itemScores = new Map<ItemType, num>();
+    for (var item in items) {
+      num runningScore = itemScores.putIfAbsent(item.type, () => 0);
+      if (item.luxuryIsCumulative) {
+        itemScores[item.type] = runningScore + item.luxuryScore;
+      } else {
+        itemScores[item.type] =
+            item.luxuryScore > runningScore ? item.luxuryScore : runningScore;
+      }
+    }
 
     return safety + gratitude;
   }
@@ -119,9 +157,53 @@ class Actor {
   }
 
   toString() => "Actor<$name>";
+
+  Item removeItem(Type type) {
+    Item markedForRemoval;
+    for (var item in items) {
+      if (item.runtimeType == type) {
+        markedForRemoval = item;
+        break;
+      }
+    }
+    if (markedForRemoval == null) {
+      throw new StateError("Cannot remove item: actor $this doesn't have "
+          "$type");
+    }
+    items.remove(markedForRemoval);
+    return markedForRemoval;
+  }
+
+  Iterable<Item> removeItems(Type type, int count) {
+    var markedForRemoval = <Item>[];
+    int remaining = count;
+    for (var item in items) {
+      if (item.runtimeType == type) {
+        markedForRemoval.add(item);
+      }
+      remaining -= 1;
+      if (remaining <= 0) break;
+    }
+    if (remaining != 0) {
+      throw new StateError("Cannot remove $count items of $type from $this. "
+          "Only ${count - remaining} in possession.");
+    }
+    markedForRemoval.forEach((item) => items.remove(item));
+    return markedForRemoval;
+  }
+
+  bool hasItem(Type type, {int count: 1}) {
+    for (var item in items) {
+      if (item.runtimeType == type) {
+        count -= 1;
+      }
+      if (count <= 0) break;
+    }
+    return count <= 0;
+  }
 }
 
-class Scale implements Comparable {
+class Scale implements Comparable<Scale> {
   static const num upperBound = 1;
   static const num lowerBound = -1;
 

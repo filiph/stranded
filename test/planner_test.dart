@@ -61,7 +61,6 @@ Iterable<DebugActorAction> defineActions() {
     recBuilder.description = "$actor killed $target";
     world.actors.remove(target);
 
-//    XXX START HERE: create an ActionRecord instead of the below
     for (var other in world.actors) {
       if (other.id == actor.id) continue;
       other.safetyFear[actor].decrease(0.9);

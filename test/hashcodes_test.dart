@@ -26,7 +26,7 @@ void main() {
 
     test("hashCode stays the same", () {
       int hash = world.hashCode;
-      var newWorld = new WorldState.from(world);
+      var newWorld = new WorldState.duplicate(world);
       expect(newWorld.hashCode, hash);
     });
 
@@ -38,7 +38,7 @@ void main() {
 
     test("hashCode changes on removed actor", () {
       int hash = world.hashCode;
-      var nextWorld = new WorldState.from(world);
+      var nextWorld = new WorldState.duplicate(world);
       nextWorld.actors.remove(nextWorld.actors.first);
       expect(nextWorld.hashCode, isNot(hash));
     });
@@ -77,7 +77,7 @@ void main() {
 
     test("hashCode stays the same for equivalent maps", () {
       int hash = map.hashCode;
-      var newMap = new ActorRelationshipMap.from(map);
+      var newMap = new ActorRelationshipMap.duplicate(map);
       expect(newMap.hashCode, hash);
     });
 
