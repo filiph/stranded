@@ -21,17 +21,10 @@ main() {
 
   var actions = defineActions().toList();
 
-  void gatherBranchesSuccess(Actor actor, WorldState world) {
-    var recBuilder = new ActionRecordBuilder()
-      ..description = "$actor gathered some strong, straight branches"
-      ..protagonist = actor
-      ..markBeforeAction(world);
-
+  String gatherBranchesSuccess(Actor actor, WorldState world) {
     var branches = new Branch() * 10;
     actor.items.addAll(branches);
-
-    recBuilder.markAfterAction(world);
-    world.actionRecords.add(recBuilder.build());
+    return "$actor gathered some strong, straight branches";
   }
 
   var gatherBranches = new DebugActorAction("gather straight branches",
@@ -39,17 +32,10 @@ main() {
 
   actions.add(gatherBranches);
 
-  void buildBranchTentSuccess(Actor actor, WorldState world) {
-    var recBuilder = new ActionRecordBuilder()
-      ..description = "$actor built a tent"
-      ..protagonist = actor
-      ..markBeforeAction(world);
-
+  String buildBranchTentSuccess(Actor actor, WorldState world) {
     actor.removeItems(Branch, 8);
     actor.items.add(new Tent());
-
-    recBuilder.markAfterAction(world);
-    world.actionRecords.add(recBuilder.build());
+    return "$actor built a tent";
   }
 
   var buildBranchTent = new DebugActorAction(
@@ -61,19 +47,13 @@ main() {
 
   actions.add(buildBranchTent);
 
-  void giveBranchTentSuccess(Actor actor, WorldState world) {
+  String giveBranchTentSuccess(Actor actor, WorldState world) {
     var target = world.actors.where((a) => a != actor).last;
-
-    var recBuilder = new ActionRecordBuilder()
-      ..description = "$actor gave a tent to $target"
-      ..protagonist = actor
-      ..markBeforeAction(world);
 
     var tent = actor.removeItem(Tent);
     target.items.add(tent);
 
-    recBuilder.markAfterAction(world);
-    world.actionRecords.add(recBuilder.build());
+    return "$actor gave a tent to $target";
   }
 
   var giveBranchTent = new DebugActorAction(

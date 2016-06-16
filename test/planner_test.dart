@@ -43,31 +43,27 @@ void main() {
 }
 
 Iterable<DebugActorAction> defineActions() {
-  var sleep = new DebugActorAction(
-      "sleep", (_, __) => true, (actor, world) => world, null, 1.0);
+  var sleep = new DebugActorAction("sleep", (_, __) => true, (actor, world) {
+    return "$actor sleeps";
+  }, null, 1.0);
 
-  void renameSuccess(Actor actor, WorldState world) {
+  String renameSuccess(Actor actor, WorldState world) {
     actor.name = "Richard";
+    return "$actor renames to Richard";
   }
 
   var rename = new DebugActorAction("rename",
       (Actor actor, _) => actor.name != "Richard", renameSuccess, null, 0.9);
 
-  void killSuccess(Actor actor, WorldState world) {
-    var recBuilder = new ActionRecordBuilder()
-      ..protagonist = actor
-      ..markBeforeAction(world);
+  String killSuccess(Actor actor, WorldState world) {
     var target = world.actors.where((a) => a != actor).first;
-    recBuilder.description = "$actor killed $target";
     world.actors.remove(target);
 
     for (var other in world.actors) {
       if (other.id == actor.id) continue;
       other.safetyFear[actor].decrease(0.9);
     }
-
-    recBuilder.markAfterAction(world);
-    world.actionRecords.add(recBuilder.build());
+    return "$actor killed $target";
   }
 
   var kill = new DebugActorAction(
@@ -79,17 +75,10 @@ Iterable<DebugActorAction> defineActions() {
 
   List<DebugActorAction> flatters = [];
   for (int i = 1; i <= 20; i++) {
-    void flatterSuccess(Actor actor, WorldState world) {
-      var recBuilder = new ActionRecordBuilder()
-        ..protagonist = actor
-        ..markBeforeAction(world);
+    String flatterSuccess(Actor actor, WorldState world) {
       var target = world.actors.where((a) => a != actor).first;
-      recBuilder.description = "$actor flattered $target";
-
       target.safetyFear[actor].increase(i / 20);
-
-      recBuilder.markAfterAction(world);
-      world.actionRecords.add(recBuilder.build());
+      return "$actor flattered $target";
     }
 
     var flatter = new DebugActorAction(
