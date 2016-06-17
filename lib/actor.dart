@@ -138,8 +138,9 @@ class Actor {
             item.luxuryScore > runningScore ? item.luxuryScore : runningScore;
       }
     }
+    num luxurySum = itemScores.values.fold(0, (prev, val) => prev + val);
 
-    return safety + gratitude;
+    return safety + gratitude + luxurySum;
   }
 
   /// Computes gratitude towards [other] given the state of the [world].
