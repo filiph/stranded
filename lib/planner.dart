@@ -44,6 +44,12 @@ class ActorPlanner {
         "(bestScore = $bestScore)");
   }
 
+  Iterable<String> generateTable() sync* {
+    for (var key in firstActionScores.keys) {
+      yield "$key\t${firstActionScores[key].toStringAsFixed(2)}";
+    }
+  }
+
   void plan({int maxOrder: 3}) {
     firstActionScores.clear();
 
@@ -101,6 +107,7 @@ class ActorPlanner {
   /// applying [firstAction] and then up to [maxOrder] other steps.
   Iterable<ConsequenceStats> _getConsequenceStats(
       PlanConsequence initial, ActorAction firstAction, int maxOrder) sync* {
+    // Actor object changes during planning, so we need to look up via id.
     var currentActor = initial.world.actors.singleWhere((a) => a.id == actorId);
 
     var open = new Queue<PlanConsequence>();

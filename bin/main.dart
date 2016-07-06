@@ -72,4 +72,5 @@ main() {
   planner.plan();
   print("> ${planner.getBest()}");
   print("planConsequencesComputed > ${planner.planConsequencesComputed}");
+  planner.generateTable().forEach(print);
 }
