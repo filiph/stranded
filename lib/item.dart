@@ -63,8 +63,8 @@ abstract class Item {
   bool operator ==(o) => o is Item && hashCode == o.hashCode;
 
   /// Creates [value] number of copies (that's including this instance).
-  Iterable<Item> operator *(int value) {
-    var list = new List<Item>.generate(value - 1, (i) => copy());
+  Iterable<dynamic> operator *(int value) {
+    var list = new List<dynamic>.generate(value - 1, (i) => copy());
     list.insert(0, this);
     return list;
   }

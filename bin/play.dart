@@ -4,6 +4,8 @@ import 'package:stranded/planner.dart';
 import '../test/planner_test.dart';
 import 'package:stranded/action.dart';
 import 'package:stranded/item.dart';
+import 'dart:io';
+import 'package:stranded/plan_consequence.dart';
 
 main() {
   var filip = new Actor(1, "Filip");
@@ -16,9 +18,11 @@ main() {
   helen.safetyFear[filip] = new Scale(0.2);
   helen.safetyFear[ted] = new Scale(-0.5);
 
+  List<Actor> actors = <Actor>[filip, ted, helen];
+
   var world = new WorldState(new Set.from([filip, ted, helen]));
 
-  var actions = defineActions().toList();
+  Set<ActorAction> actions = defineActions().toSet();
 
   String gatherBranchesSuccess(Actor actor, WorldState world) {
     List<Branch> branches = new Branch() * 10 as List<Branch>;
@@ -57,28 +61,38 @@ main() {
 
   var giveBranchTent = new DebugActorAction(
       "give a tent",
-      (Actor actor, WorldState world) => actor.hasItem(Tent),
+      (Actor actor, WorldState world) =>
+          actor.hasItem(Tent) && world.actors.length > 1,
       giveBranchTentSuccess,
       null,
       1.0);
 
   actions.add(giveBranchTent);
 
-//  XXX START HERE:
-//  create extremely simple play loop
-//  add more actions:
-//  - search location
-//  - create weapons
-//  - gather leaves
-//  - create clothing
-//  -
-
   world.validate();
 
-  var planner = new ActorPlanner(filip, world, new Set.from(actions));
+  while (true) {
+    for (var actor in actors) {
+      actor = world.actors.singleWhere((candidate) => actor == candidate);
+      var planner = new ActorPlanner(actor, world, actions);
+      print("Planning for $actor");
+      planner.plan();
 
-  planner.plan();
-  print("> ${planner.getBest()}");
-  print("planConsequencesComputed > ${planner.planConsequencesComputed}");
-  planner.generateTable().forEach(print);
+      ActorAction selected;
+      if (actor == filip) {
+        // Player
+        planner.generateTable().forEach(print);
+        int option = int.parse(stdin.readLineSync());
+        selected = planner.firstActionScores.keys.toList()[option];
+      } else {
+        selected = planner.getBest();
+      }
+      print("$actor selects $selected");
+      var consequences = selected
+          .apply(actor, new PlanConsequence.initial(world), world)
+          .toSet();
+      var consequence = consequences.first; // Actually pick by random.
+      world = consequence.world;
+    }
+  }
 }
