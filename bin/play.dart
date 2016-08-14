@@ -8,7 +8,7 @@ import 'dart:io';
 import 'package:stranded/plan_consequence.dart';
 
 main() {
-  var filip = new Actor(1, "Filip");
+  var filip = new Actor(1, "Filip", initiative: 1000);
   var ted = new Actor(100, "Ted");
   var helen = new Actor(500, "Helen");
   filip.safetyFear[ted] = new Scale(-0.1);
@@ -72,27 +72,26 @@ main() {
   world.validate();
 
   while (true) {
-    for (var actor in actors) {
-      actor = world.actors.singleWhere((candidate) => actor == candidate);
-      var planner = new ActorPlanner(actor, world, actions);
-      print("Planning for $actor");
-      planner.plan();
+    var actor = world.currentActor;
+//    actor = world.actors.singleWhere((candidate) => actor == candidate);
+    var planner = new ActorPlanner(actor, world, actions);
+    print("Planning for $actor");
+    planner.plan();
 
-      ActorAction selected;
-      if (actor == filip) {
-        // Player
-        planner.generateTable().forEach(print);
-        int option = int.parse(stdin.readLineSync());
-        selected = planner.firstActionScores.keys.toList()[option];
-      } else {
-        selected = planner.getBest();
-      }
-      print("$actor selects $selected");
-      var consequences = selected
-          .apply(actor, new PlanConsequence.initial(world), world)
-          .toSet();
-      var consequence = consequences.first; // Actually pick by random.
-      world = consequence.world;
+    ActorAction selected;
+    if (actor == filip) {
+      // Player
+      planner.generateTable().forEach(print);
+      int option = int.parse(stdin.readLineSync());
+      selected = planner.firstActionScores.keys.toList()[option];
+    } else {
+      selected = planner.getBest();
     }
+    print("$actor selects $selected");
+    var consequences = selected
+        .apply(actor, new PlanConsequence.initial(world), world)
+        .toSet();
+    var consequence = consequences.first; // Actually pick by random.
+    world = consequence.world;
   }
 }

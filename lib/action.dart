@@ -19,7 +19,7 @@ abstract class ActorAction {
     assert(successChance != null);
 
     if (successChance > 0) {
-      var worldCopy = new WorldState.duplicate(world);
+      var worldCopy = new WorldState.duplicate(world, true);
       var actorInWorldCopy =
           worldCopy.actors.singleWhere((a) => a.id == actor.id);
       var builder = _prepareWorldRecord(actor, world);
@@ -36,7 +36,7 @@ abstract class ActorAction {
         return;
       }
 
-      var worldCopy = new WorldState.duplicate(world);
+      var worldCopy = new WorldState.duplicate(world, true);
       var actorInWorldCopy =
           worldCopy.actors.singleWhere((a) => a.id == actor.id);
       var builder = _prepareWorldRecord(actor, world);

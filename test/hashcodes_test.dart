@@ -11,7 +11,7 @@ void main() {
     WorldState world;
 
     setUp(() {
-      var filip = new Actor(1, "Filip");
+      var filip = new Actor(1, "Filip", initiative: 1000);
       var ted = new Actor(100, "Ted");
       var helen = new Actor(500, "Helen");
       filip.safetyFear[ted] = new Scale(-0.1);
@@ -26,7 +26,7 @@ void main() {
 
     test("hashCode stays the same", () {
       int hash = world.hashCode;
-      var newWorld = new WorldState.duplicate(world);
+      var newWorld = new WorldState.duplicate(world, false);
       expect(newWorld.hashCode, hash);
     });
 
@@ -38,7 +38,7 @@ void main() {
 
     test("hashCode changes on removed actor", () {
       int hash = world.hashCode;
-      var nextWorld = new WorldState.duplicate(world);
+      var nextWorld = new WorldState.duplicate(world, false);
       nextWorld.actors.remove(nextWorld.actors.first);
       expect(nextWorld.hashCode, isNot(hash));
     });

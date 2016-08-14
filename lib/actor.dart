@@ -68,6 +68,14 @@ class Actor {
 
   final Set<Item> items;
 
+  /// The higher the initiative, the sooner this actor will act each turn.
+  ///
+  /// The player should have the highest initiative (so that he starts). The
+  /// island should probably have the lowest.
+  ///
+  /// This doesn't change during gameplay.
+  final int initiative;
+
   // TODO: loveIndifference
   // other feelings?
 
@@ -77,16 +85,21 @@ class Actor {
   /// TODO: uncomment and implement
 //  final UnmodifiableSetView<LocationResource> knownResources;
 
-  Actor(int id, String name)
-      : this._(id, name, new ActorRelationshipMap(), new Set());
+  Actor(int id, String name, {int initiative})
+      : this._(id, name, new ActorRelationshipMap(), new Set(),
+            initiative == null ? id : initiative);
 
-  Actor._(this.id, this.name, this.safetyFear, this.items);
+  Actor._(this.id, this.name, this.safetyFear, this.items, this.initiative);
 
   factory Actor.duplicate(Actor other) {
     var items =
         duplicateSet/*<Item>*/(other.items, (item) => new Item.duplicate(item));
-    var actor = new Actor._(other.id, other.name,
-        new ActorRelationshipMap.duplicate(other.safetyFear), items);
+    var actor = new Actor._(
+        other.id,
+        other.name,
+        new ActorRelationshipMap.duplicate(other.safetyFear),
+        items,
+        other.initiative);
     return actor;
   }
 

@@ -45,8 +45,10 @@ class ActorPlanner {
   }
 
   Iterable<String> generateTable() sync* {
+    int i = 0;
     for (var key in firstActionScores.keys) {
-      yield "$key\t${firstActionScores[key].toStringAsFixed(2)}";
+      yield "$i) $key\t${firstActionScores[key].toStringAsFixed(2)}";
+      i += 1;
     }
   }
 
@@ -142,8 +144,7 @@ class ActorPlanner {
 
       for (ActorAction action in actions) {
         if (!action.isApplicable(currentActor, current.world)) continue;
-        var worldCopy = new WorldState.duplicate(current.world);
-        var consequences = action.apply(currentActor, current, worldCopy);
+        var consequences = action.apply(currentActor, current, current.world);
         for (PlanConsequence next in consequences) {
           planConsequencesComputed++;
 

@@ -12,13 +12,24 @@ class WorldState {
   final Set<ActionRecord> actionRecords;
   final Set<Location> locations;
 
+  /// The age of this WorldState. Every 'turn', this number increases by one.
+  int time;
+
+  /// Each 'turn' ([time]) we go through actors according to their initiative.
+  /// This number tells us which actor's turn it is.
+  int actorTurn;
+
+  int get _uniqueTurnId => time * 10000 + actorTurn;
+
   WorldState(this.actors)
       : actionRecords = new Set(),
         items = new Set(),
-        locations = new Set();
+        locations = new Set(),
+        time = 0,
+        actorTurn = 0;
 
   /// Creates a deep clone of [other].
-  WorldState.duplicate(WorldState other)
+  WorldState.duplicate(WorldState other, bool elapseTime)
       : actors = new Set<Actor>(),
         actionRecords = new Set<ActionRecord>(),
         items = new Set<Item>(),
@@ -30,14 +41,35 @@ class WorldState {
     items.addAll(other.items.map((otherItem) => new Item.duplicate(otherItem)));
     locations.addAll(other.locations
         .map((otherLocation) => new Location.duplicate(otherLocation)));
+
+    time = other.time;
+    actorTurn = other.actorTurn;
+
+    // Elapse time.
+    if (elapseTime) {
+      actorTurn += 1;
+      if (actorTurn >= actors.length) {
+        actorTurn = 0;
+        time += 1;
+      }
+    }
   }
 
   @override
   int get hashCode {
-    return hash2(hashObjects(actors), hashObjects(actionRecords));
+    return hash3(
+        hashObjects(actors), hashObjects(actionRecords), _uniqueTurnId);
   }
 
   bool operator ==(o) => o is WorldState && hashCode == o.hashCode;
+
+  /// Returns the actor from [actors] whose 'turn' it is right now.
+  Actor get currentActor {
+    assert(actorTurn <= actors.length - 1);
+    List<Actor> sorted = actors.toList(growable: false)
+      ..sort((a, b) => -a.initiative.compareTo(b.initiative));
+    return sorted[actorTurn];
+  }
 
   toString() => "World<${actors.toSet()}>";
 
