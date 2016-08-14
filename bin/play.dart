@@ -73,7 +73,6 @@ main() {
 
   while (true) {
     var actor = world.currentActor;
-//    actor = world.actors.singleWhere((candidate) => actor == candidate);
     var planner = new ActorPlanner(actor, world, actions);
     print("Planning for $actor");
     planner.plan();
