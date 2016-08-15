@@ -56,6 +56,7 @@ Iterable<DebugActorAction> defineActions() {
       (Actor actor, _) => actor.name != "Richard", renameSuccess, null, 0.9);
 
   String killSuccess(Actor actor, WorldState world) {
+    // TODO: world.removeActor, which also updates actorTurn if needed
     var target = world.actors.where((a) => a != actor).first;
     world.actors.remove(target);
 

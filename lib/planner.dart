@@ -60,6 +60,8 @@ class ActorPlanner {
     var initialScore = currentActor.scoreWorld(_initial.world);
 
     for (var action in actions) {
+//      TODO: compute (simpler) 'other' plans for each other player...
+//        - after each action.apply, we need to simulate other actors (var planner = new ActorPlanner(otherActor, world, actions);)
       var consequenceStats = _getConsequenceStats(_initial, action, maxOrder);
 
       if (consequenceStats.isEmpty) {
