@@ -82,10 +82,9 @@ class Actor {
   /// TODO: uncomment and implement
 //  final UnmodifiableSetView<LocationResource> knownResources;
 
-  Actor(int id, String name,
-      {int initiative, Team team: playerTeam, int health: 100})
-      : this._(id, name, team, new ActorRelationshipMap(), new Set(), health,
-            initiative == null ? id : initiative);
+  Actor(int id, String name, {int initiative, Team team, int health: 100})
+      : this._(id, name, team ?? playerTeam, new ActorRelationshipMap(),
+            new Set(), health, initiative == null ? id : initiative);
 
   Actor._(this.id, this.name, this.team, this.safetyFear, this.items,
       this.health, this.initiative);
