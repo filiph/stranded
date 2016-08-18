@@ -1,11 +1,13 @@
 library stranded.actor;
 
-import 'package:quiver/core.dart';
-import 'package:stranded/world.dart';
 import 'package:collection/collection.dart';
+import 'package:quiver/core.dart';
+
+import 'package:stranded/world.dart';
 import 'package:stranded/action_record.dart';
 import 'package:stranded/item.dart';
 import 'package:stranded/util/duplicate_set.dart';
+import 'package:stranded/team.dart';
 
 class ActorMap<T> extends CanonicalizedMap<int, Actor, T> {
   ActorMap() : super((Actor key) => key.id, isValidKey: (key) => key != null);
@@ -34,28 +36,12 @@ class ActorRelationshipMap extends ActorMap<Scale> {
   }
 }
 
-//class ActorRelationshipMap extends CanonicalizedMap<int, Actor, Scale> {
-//  ActorRelationshipMap()
-//      : super((Actor key) => key.id, isValidKey: (key) => key != null);
-//
-//  factory ActorRelationshipMap.from(ActorRelationshipMap other) {
-//    var map = new ActorRelationshipMap();
-//    other.forEach((Actor key, Scale value) => map[key] = new Scale.from(value));
-//    return map;
-//  }
-//
-//  @override
-//  int get hashCode {
-//    return hashObjects(values.toList(growable: false));
-//  }
-//
-//  bool operator ==(o) => o is ActorRelationshipMap && hashCode == o.hashCode;
-//}
-
 class Actor {
   /// Everything else can change, but Actor's [id] can't.
   final int id;
   String name;
+
+  Team team;
 
   /// How safe does [this] Actor feel in the presence of the different other
   /// actors.
@@ -64,9 +50,20 @@ class Actor {
   /// feeling much less safe near Bob. This will greatly decrease her world
   /// score, btw, so this automatically makes an attempted murder something
   /// people don't appreciate.
+  // TODO: for 'Skyrim', we don't need this most of the time (simple friend or foe suffices) -- maybe create PsychologicalActor?
   final ActorRelationshipMap safetyFear;
 
   final Set<Item> items;
+
+  /// The weapon this actor is wielding at the moment.
+  ///
+  /// Changing a weapon should ordinarily take a turn.
+  Item currentWeapon;
+
+  bool wields(ItemType value) =>
+      currentWeapon != null && currentWeapon.type == value;
+
+  int health = 100;
 
   /// The higher the initiative, the sooner this actor will act each turn.
   ///
@@ -85,11 +82,13 @@ class Actor {
   /// TODO: uncomment and implement
 //  final UnmodifiableSetView<LocationResource> knownResources;
 
-  Actor(int id, String name, {int initiative})
-      : this._(id, name, new ActorRelationshipMap(), new Set(),
+  Actor(int id, String name,
+      {int initiative, Team team: playerTeam, int health: 100})
+      : this._(id, name, team, new ActorRelationshipMap(), new Set(), health,
             initiative == null ? id : initiative);
 
-  Actor._(this.id, this.name, this.safetyFear, this.items, this.initiative);
+  Actor._(this.id, this.name, this.team, this.safetyFear, this.items,
+      this.health, this.initiative);
 
   factory Actor.duplicate(Actor other) {
     var items =
@@ -97,15 +96,26 @@ class Actor {
     var actor = new Actor._(
         other.id,
         other.name,
+        other.team,
         new ActorRelationshipMap.duplicate(other.safetyFear),
         items,
+        other.health,
         other.initiative);
+    actor.currentWeapon = other.currentWeapon;
     return actor;
   }
 
   @override
   int get hashCode {
-    return hash4(id, name, hashObjects(safetyFear.values), hashObjects(items));
+    return hashObjects([
+      id,
+      name,
+      team,
+      hashObjects(safetyFear.values),
+      hashObjects(items),
+      currentWeapon,
+      health
+    ]);
   }
 
   bool operator ==(o) => o is Actor && id == o.id;
@@ -254,3 +264,5 @@ class Scale implements Comparable<Scale> {
   @override
   int compareTo(Scale other) => value.compareTo(other.value);
 }
+
+Actor duplicateActor(Actor original) => new Actor.duplicate(original);

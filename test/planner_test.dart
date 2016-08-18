@@ -12,7 +12,7 @@ void main() {
   group('Planner', () {
     WorldState world;
     Actor filip;
-    Iterable<DebugActorAction> actions;
+    Iterable<ClosureActorAction> actions;
 
     setUp(() {
       filip = new Actor(1, "Filip");
@@ -42,8 +42,8 @@ void main() {
   });
 }
 
-Iterable<DebugActorAction> defineActions() {
-  var sleep = new DebugActorAction("sleep", (_, __) => true, (actor, world) {
+Iterable<ClosureActorAction> defineActions() {
+  var sleep = new ClosureActorAction("sleep", (_, __) => true, (actor, world) {
     return "$actor sleeps";
   }, null, 1.0);
 
@@ -52,7 +52,7 @@ Iterable<DebugActorAction> defineActions() {
     return "$actor renames to Richard";
   }
 
-  var rename = new DebugActorAction("rename",
+  var rename = new ClosureActorAction("rename",
       (Actor actor, _) => actor.name != "Richard", renameSuccess, null, 0.9);
 
   String killSuccess(Actor actor, WorldState world) {
@@ -67,14 +67,14 @@ Iterable<DebugActorAction> defineActions() {
     return "$actor killed $target";
   }
 
-  var kill = new DebugActorAction(
+  var kill = new ClosureActorAction(
       "random kill",
       (actor, WorldState world) => world.actors.any((a) => a != actor),
       killSuccess,
       null /* TODO: add bad pokus o vrazdu */,
       0.5);
 
-  List<DebugActorAction> flatters = [];
+  List<ClosureActorAction> flatters = [];
   for (int i = 1; i <= 20; i++) {
     String flatterSuccess(Actor actor, WorldState world) {
       var target = world.actors.where((a) => a != actor).first;
@@ -82,7 +82,7 @@ Iterable<DebugActorAction> defineActions() {
       return "$actor flattered $target";
     }
 
-    var flatter = new DebugActorAction(
+    var flatter = new ClosureActorAction(
         "random flatter #$i",
         (actor, WorldState world) => world.actors.any((a) => a != actor),
         flatterSuccess,

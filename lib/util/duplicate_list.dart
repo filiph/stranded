@@ -1,9 +1,9 @@
-library duplicate_set;
+library duplicate_list;
 
 /// Makes a deep copy of the [original] set, using [clone] for each member.
-Set/*<T>*/ duplicateSet/*<T>*/(
-    Set/*<T>*/ original, dynamic/*=T*/ clone(/*=T*/ object)) {
-  Set/*<T>*/ result = new Set/*<T>*/();
+List/*<T>*/ duplicateList/*<T>*/(
+    List/*<T>*/ original, dynamic/*=T*/ clone(/*=T*/ object)) {
+  List/*<T>*/ result = new List/*<T>*/();
   for (dynamic/*=T*/ member in original) {
     result.add(clone(member));
   }

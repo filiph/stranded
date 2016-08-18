@@ -1,79 +1,71 @@
+import 'dart:io';
+
+import 'package:quiver/iterables.dart';
+
 import 'package:stranded/actor.dart';
 import 'package:stranded/world.dart';
 import 'package:stranded/planner.dart';
-import '../test/planner_test.dart';
 import 'package:stranded/action.dart';
 import 'package:stranded/item.dart';
-import 'dart:io';
 import 'package:stranded/plan_consequence.dart';
+
+import 'src/situations/fight/fight_situation.dart';
+import 'src/situations/fight/dash.dart';
+import 'package:stranded/team.dart';
+import 'src/situations/fight/dodge_dash.dart';
 
 main() {
   var filip = new Actor(1, "Filip", initiative: 1000);
-  var ted = new Actor(100, "Ted");
-  var helen = new Actor(500, "Helen");
-  filip.safetyFear[ted] = new Scale(-0.1);
-  filip.safetyFear[helen] = new Scale(0.5);
-  ted.safetyFear[filip] = new Scale(-0.5);
-  ted.safetyFear[helen] = new Scale(0.0);
-  helen.safetyFear[filip] = new Scale(0.2);
-  helen.safetyFear[ted] = new Scale(-0.5);
+  var sedgwick = new Actor(100, "Sedgwick");
+  var brant = new Actor(500, "Brant");
+  filip.safetyFear[sedgwick] = new Scale(-0.1);
+  filip.safetyFear[brant] = new Scale(0.5);
+  sedgwick.safetyFear[filip] = new Scale(-0.5);
+  sedgwick.safetyFear[brant] = new Scale(0.0);
+  brant.safetyFear[filip] = new Scale(0.2);
+  brant.safetyFear[sedgwick] = new Scale(-0.5);
 
-  List<Actor> actors = <Actor>[filip, ted, helen];
+  var goon = new Actor(1000, "Goon", team: defaultEnemyTeam);
 
-  var world = new WorldState(new Set.from([filip, ted, helen]));
+  List<Actor> actors = <Actor>[filip, sedgwick, brant, goon];
+  actors.forEach((actor) => actor.currentWeapon = new Sword());
 
-  Set<ActorAction> actions = defineActions().toSet();
+  var initialSituation = new FightSituation([filip, sedgwick, brant], [goon]);
 
-  String gatherBranchesSuccess(Actor actor, WorldState world) {
-    List<Branch> branches = new Branch() * 10 as List<Branch>;
-    actor.items.addAll(branches);
-    return "$actor gathered some strong, straight branches";
-  }
+  WorldState world = new WorldState(new Set.from(actors), initialSituation);
 
-  var gatherBranches = new DebugActorAction("gather straight branches",
-      (actor, WorldState world) => true, gatherBranchesSuccess, null, 1.0);
+  Set<ActorAction> actions = new Set<ActorAction>();
 
-  actions.add(gatherBranches);
+  Set<ActionBuilder> actionBuilders = new Set<ActionBuilder>();
+  actionBuilders.add(dashWithSword);
+  actionBuilders.add(dodgeDash);
 
-  String buildBranchTentSuccess(Actor actor, WorldState world) {
-    actor.removeItems(Branch, 8);
-    actor.items.add(new Tent());
-    return "$actor built a tent";
-  }
+//  world.validate();
 
-  var buildBranchTent = new DebugActorAction(
-      "build a tent",
-      (Actor actor, WorldState world) => actor.hasItem(Branch, count: 8),
-      buildBranchTentSuccess,
-      null,
-      1.0);
+  var consequence = new PlanConsequence.initial(world);
 
-  actions.add(buildBranchTent);
+  while (world.situations.isNotEmpty) {
+    var situation = world.currentSituation;
+    var actor = situation.currentActor;
 
-  String giveBranchTentSuccess(Actor actor, WorldState world) {
-    var target = world.actors.where((a) => a != actor).last;
+    List<ActorAction> availableActions;
+    if (situation.actionBuilderWhitelist != null) {
+      availableActions = situation.actionBuilderWhitelist
+          .map((builder) => builder.build(actor, world))
+          .expand((x) => x)
+          .toList();
+    } else {
+      availableActions = new List<ActorAction>.from(actions);
+      for (var builder in actionBuilders) {
+        Iterable<ActorAction> builtActions = builder.build(actor, world);
+        availableActions.addAll(builtActions);
+      }
+    }
 
-    var tent = actor.removeItem(Tent);
-    target.items.add(tent);
+    availableActions
+        .removeWhere((action) => !action.isApplicable(actor, world));
 
-    return "$actor gave a tent to $target";
-  }
-
-  var giveBranchTent = new DebugActorAction(
-      "give a tent",
-      (Actor actor, WorldState world) =>
-          actor.hasItem(Tent) && world.actors.length > 1,
-      giveBranchTentSuccess,
-      null,
-      1.0);
-
-  actions.add(giveBranchTent);
-
-  world.validate();
-
-  while (true) {
-    var actor = world.currentActor;
-    var planner = new ActorPlanner(actor, world, actions);
+    var planner = new ActorPlanner(actor, world, availableActions);
     print("Planning for $actor");
     planner.plan();
 
@@ -87,10 +79,9 @@ main() {
       selected = planner.getBest();
     }
     print("$actor selects $selected");
-    var consequences = selected
-        .apply(actor, new PlanConsequence.initial(world), world)
-        .toSet();
-    var consequence = consequences.first; // Actually pick by random.
+    var consequences = selected.apply(actor, consequence, world).toSet();
+    consequence = consequences.first; // TODO: Actually pick by random.
+//    XXX START HERE: random!
     world = consequence.world;
   }
 }

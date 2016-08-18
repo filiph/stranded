@@ -19,7 +19,7 @@ class ActorPlanner {
   final int actorId;
   final PlanConsequence _initial;
 
-  final Set<ActorAction> actions;
+  final List<ActorAction> actions;
   int planConsequencesComputed = 0;
   bool _resultsReady = false;
 

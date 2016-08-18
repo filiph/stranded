@@ -4,7 +4,7 @@ import 'dart:math';
 
 import 'package:stranded/actor.dart';
 
-enum ItemType { SPEAR, BRANCH, TENT }
+enum ItemType { SPEAR, BRANCH, TENT, SWORD }
 
 String typeToDescription(ItemType type) {
   switch (type) {
@@ -14,6 +14,10 @@ String typeToDescription(ItemType type) {
       return "branch";
     case ItemType.TENT:
       return "tent";
+    case ItemType.SWORD:
+      return "sword";
+    default:
+      throw new ArgumentError(type);
   }
 }
 
@@ -85,6 +89,16 @@ class Tent extends Item {
 
   Tent copy({bool identical: false}) =>
       new Tent(hashCode: identical ? hashCode : null);
+
+  bool luxuryIsCumulative = false;
+  num luxuryScore = 10;
+}
+
+class Sword extends Item {
+  Sword({int hashCode}) : super(ItemType.SWORD, hashCode: hashCode);
+
+  Sword copy({bool identical: false}) =>
+      new Sword(hashCode: identical ? hashCode : null);
 
   bool luxuryIsCumulative = false;
   num luxuryScore = 10;
