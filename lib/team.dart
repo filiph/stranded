@@ -1,17 +1,26 @@
 library stranded.team;
 
-class Team {
-  final int id;
-  const Team(this.id);
+import 'package:built_value/built_value.dart';
 
-  int get hashCode => id;
+part 'team.g.dart';
 
-  bool operator ==(other) => other is Team && id == other.id;
+abstract class Team implements Built<Team, TeamBuilder>{
+  int get id;
+
+  Team._();
+  factory Team([updates(TeamBuilder b)]) = _$Team;
 
   /// Currently, every team is enemy of every other team. In the future,
   /// we can implement allegiances etc.
   bool isEnemyWith(Team other) => id != other.id;
 }
 
-const Team playerTeam = const Team(0);
-const Team defaultEnemyTeam = const Team(1);
+final Team playerTeam = new Team((b) => b.id = 0);
+final Team defaultEnemyTeam = new Team((b) => b.id = 1);
+
+abstract class TeamBuilder implements Builder<Team, TeamBuilder> {
+  int id;
+
+  TeamBuilder._();
+  factory TeamBuilder() = _$TeamBuilder;
+}
