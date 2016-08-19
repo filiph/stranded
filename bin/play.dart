@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:quiver/iterables.dart';
+import 'package:built_collection/built_collection.dart';
 
 import 'package:stranded/actor.dart';
 import 'package:stranded/world.dart';
@@ -15,24 +15,32 @@ import 'package:stranded/team.dart';
 import 'src/situations/fight/dodge_dash.dart';
 
 main() {
-  var filip = new Actor(1, "Filip", initiative: 1000);
-  var sedgwick = new Actor(100, "Sedgwick");
-  var brant = new Actor(500, "Brant");
-  filip.safetyFear[sedgwick] = new Scale(-0.1);
-  filip.safetyFear[brant] = new Scale(0.5);
-  sedgwick.safetyFear[filip] = new Scale(-0.5);
-  sedgwick.safetyFear[brant] = new Scale(0.0);
-  brant.safetyFear[filip] = new Scale(0.2);
-  brant.safetyFear[sedgwick] = new Scale(-0.5);
+  var filip = new Actor((b) => b
+    ..id = 1
+    ..name = "Filip"
+    ..currentWeapon = new Sword()
+    ..initiative = 1000);
+  var sedgwick = new Actor((b) => b
+    ..id = 100
+    ..name = "Sedgwick"
+    ..currentWeapon = new Sword());
+  var brant = new Actor((b) => b
+    ..id = 500
+    ..name = "Brant"
+    ..currentWeapon = new Sword());
 
-  var goon = new Actor(1000, "Goon", team: defaultEnemyTeam);
+  var goon = new Actor((b) => b
+    ..id = 1000
+    ..name = "Goon"
+    ..currentWeapon = new Sword()
+    ..team = defaultEnemyTeam);
 
-  List<Actor> actors = <Actor>[filip, sedgwick, brant, goon];
-  actors.forEach((actor) => actor.currentWeapon = new Sword());
+  var initialSituation = new FightSituation(
+      new BuiltList<Actor>([filip, sedgwick, brant]),
+      new BuiltList<Actor>([goon]));
 
-  var initialSituation = new FightSituation([filip, sedgwick, brant], [goon]);
-
-  WorldState world = new WorldState(new Set.from(actors), initialSituation);
+  WorldState world = new WorldState(
+      new Set.from([filip, sedgwick, brant, goon]), initialSituation);
 
   Set<ActorAction> actions = new Set<ActorAction>();
 
@@ -66,7 +74,7 @@ main() {
         .removeWhere((action) => !action.isApplicable(actor, world));
 
     var planner = new ActorPlanner(actor, world, availableActions);
-    print("Planning for $actor");
+    print("Planning for ${actor.name}");
     planner.plan();
 
     ActorAction selected;
@@ -78,10 +86,9 @@ main() {
     } else {
       selected = planner.getBest();
     }
-    print("$actor selects $selected");
+    print("${actor.name} selects $selected");
     var consequences = selected.apply(actor, consequence, world).toSet();
     consequence = consequences.first; // TODO: Actually pick by random.
-//    XXX START HERE: random!
     world = consequence.world;
   }
 }

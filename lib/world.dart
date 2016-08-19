@@ -21,7 +21,7 @@ class WorldState {
   /// This is a push-down automaton.
   final Queue<Situation> situations;
 
-  Situation get currentSituation => situations.first;
+  Situation get currentSituation => situations.last;
 
   /// The age of this WorldState. Every 'turn', this number increases by one.
   int time;
@@ -40,7 +40,7 @@ class WorldState {
         items = new Set<Item>(),
         locations = new Set(),
         situations = new Queue() {
-    actors.addAll(other.actors.map(duplicateActor));
+    actors.addAll(other.actors);
     // TODO: duplicateActionRecord, item, etc.
     actionRecords.addAll(other.actionRecords
         .map((otherRecord) => new ActionRecord.duplicate(otherRecord)));
@@ -51,6 +51,15 @@ class WorldState {
         other.situations.map((otherSituation) => otherSituation.clone()));
 
     time = other.time;
+  }
+
+  Actor getActorById(int id) => actors.singleWhere((actor) => actor.id == id);
+
+  void updateActorById(int id, updates(ActorBuilder b)) {
+    var original = getActorById(id);
+    var updated = original.rebuild(updates);
+    actors.remove(original);
+    actors.add(updated);
   }
 
   void elapseTime() {
@@ -67,35 +76,11 @@ class WorldState {
 
   toString() => "World<${actors.toSet()}>";
 
-  /// Checks integrity of the world.
-  ///
-  /// Run this just after you set up the world with actors and before you
-  /// do any simulation.
-  void validate() {
-    void setsAreSame(Set a, Set b, String type) {
-      var aButNotB = a.difference(b);
-      if (aButNotB.isNotEmpty) {
-        throw new StateError(
-            "Bad world: $type set $a has members $aButNotB that are not in $b");
-      }
-      var bButNotA = b.difference(a);
-      if (bButNotA.isNotEmpty) {
-        throw new StateError(
-            "Bad world: $type set $b has members $bButNotA that are not in $a");
-      }
-    }
-
-    for (var actor in actors) {
-      setsAreSame(actor.safetyFear.keys.toSet(),
-          actors.where((a) => a != actor).toSet(), "safetyFear");
-    }
-  }
-
   void pushSituation(Situation situation) {
-    situations.addFirst(situation);
+    situations.addLast(situation);
   }
 
   void popSituation() {
-    situations.removeFirst();
+    situations.removeLast();
   }
 }

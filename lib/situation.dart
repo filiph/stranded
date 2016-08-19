@@ -2,7 +2,6 @@ library stranded.situation;
 
 import 'action.dart';
 import 'actor.dart';
-import 'package:stranded/world.dart';
 
 /// Situation is a phase during play. It governs which actions are available,
 /// and what actors can act (and in what order).

@@ -4,7 +4,7 @@ import 'package:built_value/built_value.dart';
 
 part 'team.g.dart';
 
-abstract class Team implements Built<Team, TeamBuilder>{
+abstract class Team implements Built<Team, TeamBuilder> {
   int get id;
 
   Team._();

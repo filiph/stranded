@@ -14,7 +14,7 @@ class DashSituation extends Situation {
 
   @override
   Situation clone() => new DashSituation(
-      new Actor.duplicate(attacker), new Actor.duplicate(target),
+      attacker, target,
       time: time);
 
   @override

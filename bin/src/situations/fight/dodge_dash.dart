@@ -13,7 +13,7 @@ var dodgeDash = new EnemyTargetActionBuilder("dodge dash",
   return "$a dodges $enemy";
 }, failure: (Actor a, enemy, WorldState w) {
   //print("$a tr<ies> to dodge but $enemy slashes him");
-  a.health = 0;
+  w.updateActorById(a.id, (b) => b.health = 0);
   w.popSituation();
   return "$a fails to dodge $enemy";
 });

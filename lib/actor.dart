@@ -1,13 +1,15 @@
 library stranded.actor;
 
+import 'package:built_value/built_value.dart';
 import 'package:collection/collection.dart';
 import 'package:quiver/core.dart';
 
 import 'package:stranded/world.dart';
 import 'package:stranded/action_record.dart';
 import 'package:stranded/item.dart';
-import 'package:stranded/util/duplicate_set.dart';
 import 'package:stranded/team.dart';
+
+part 'actor.g.dart';
 
 class ActorMap<T> extends CanonicalizedMap<int, Actor, T> {
   ActorMap() : super((Actor key) => key.id, isValidKey: (key) => key != null);
@@ -36,12 +38,14 @@ class ActorRelationshipMap extends ActorMap<Scale> {
   }
 }
 
-class Actor {
-  /// Everything else can change, but Actor's [id] can't.
-  final int id;
-  String name;
 
-  Team team;
+abstract class Actor implements Built<Actor, ActorBuilder> {
+  /// Names can change or can even be duplicate. [id] is the only safe way
+  /// to find out if we're talking about the same actor.
+  int get id;
+  String get name;
+
+  Team get team;
 
   /// How safe does [this] Actor feel in the presence of the different other
   /// actors.
@@ -51,19 +55,20 @@ class Actor {
   /// score, btw, so this automatically makes an attempted murder something
   /// people don't appreciate.
   // TODO: for 'Skyrim', we don't need this most of the time (simple friend or foe suffices) -- maybe create PsychologicalActor?
-  final ActorRelationshipMap safetyFear;
+//  ActorRelationshipMap get safetyFear;
 
-  final Set<Item> items;
+  Set<Item> get items; // TODO make immutable
 
   /// The weapon this actor is wielding at the moment.
   ///
   /// Changing a weapon should ordinarily take a turn.
-  Item currentWeapon;
+  @nullable
+  Item get currentWeapon;
 
   bool wields(ItemType value) =>
       currentWeapon != null && currentWeapon.type == value;
 
-  int health = 100;
+  int get health;
 
   /// The higher the initiative, the sooner this actor will act each turn.
   ///
@@ -71,7 +76,10 @@ class Actor {
   /// island should probably have the lowest.
   ///
   /// This doesn't change during gameplay.
-  final int initiative;
+  int get initiative;
+
+  Actor._();
+  factory Actor([updates(ActorBuilder b)]) = _$Actor;
 
   // TODO: loveIndifference
   // other feelings?
@@ -82,42 +90,28 @@ class Actor {
   /// TODO: uncomment and implement
 //  final UnmodifiableSetView<LocationResource> knownResources;
 
-  Actor(int id, String name, {int initiative, Team team, int health: 100})
-      : this._(id, name, team ?? playerTeam, new ActorRelationshipMap(),
-            new Set(), health, initiative == null ? id : initiative);
+//  Actor(int id, String name, {int initiative, Team team, int health: 100})
+//      : this._(id, name, team ?? playerTeam, new ActorRelationshipMap(),
+//            new Set(), health, initiative == null ? id : initiative);
+//
+//  Actor._(this.id, this.name, this.team, this.safetyFear, this.items,
+//      this.health, this.initiative);
+//
+//  factory Actor.duplicate(Actor other) {
+//    var items =
+//        duplicateSet/*<Item>*/(other.items, (item) => new Item.duplicate(item));
+//    var actor = new Actor._(
+//        other.id,
+//        other.name,
+//        other.team,
+//        new ActorRelationshipMap.duplicate(other.safetyFear),
+//        items,
+//        other.health,
+//        other.initiative);
+//    actor.currentWeapon = other.currentWeapon;
+//    return actor;
+//  }
 
-  Actor._(this.id, this.name, this.team, this.safetyFear, this.items,
-      this.health, this.initiative);
-
-  factory Actor.duplicate(Actor other) {
-    var items =
-        duplicateSet/*<Item>*/(other.items, (item) => new Item.duplicate(item));
-    var actor = new Actor._(
-        other.id,
-        other.name,
-        other.team,
-        new ActorRelationshipMap.duplicate(other.safetyFear),
-        items,
-        other.health,
-        other.initiative);
-    actor.currentWeapon = other.currentWeapon;
-    return actor;
-  }
-
-  @override
-  int get hashCode {
-    return hashObjects([
-      id,
-      name,
-      team,
-      hashObjects(safetyFear.values),
-      hashObjects(items),
-      currentWeapon,
-      health
-    ]);
-  }
-
-  bool operator ==(o) => o is Actor && id == o.id;
 
   /// Scores the state of the [world] in the eyes of [this] Actor.
   ///
@@ -138,10 +132,10 @@ class Actor {
   /// TODO: let author define the actor's character and use it here (optimist,
   ///       egoist, altruist, ...)
   num scoreWorld(WorldState world, {bool allKnowing: false}) {
-    // People want to feel safe.
-    Iterable<Scale> safetyFeelings = safetyFear.values;
-    num safetySum = safetyFeelings.fold(0, (prev, el) => prev + el.value);
-    num safety = safetySum / world.actors.length;
+//    // People want to feel safe.
+//    Iterable<Scale> safetyFeelings = safetyFear.values;
+//    num safetySum = safetyFeelings.fold(0, (prev, el) => prev + el.value);
+//    num safety = safetySum / world.actors.length;
 
     // People want to be useful.
     var otherActors = world.actors.where((a) => a.id != id);
@@ -162,7 +156,7 @@ class Actor {
     }
     num luxurySum = itemScores.values.fold(0, (prev, val) => prev + val);
 
-    return safety + gratitude + luxurySum;
+    return /*safety + */gratitude + luxurySum;
   }
 
   /// Computes gratitude towards [other] given the state of the [world].
@@ -178,8 +172,6 @@ class Actor {
     num cumulativeScoreChange = scoreChanges.fold(0, (a, b) => a + b);
     return cumulativeScoreChange;
   }
-
-  toString() => "Actor<$name>";
 
   Item removeItem(Type type) {
     Item markedForRemoval;
@@ -264,4 +256,17 @@ class Scale implements Comparable<Scale> {
   int compareTo(Scale other) => value.compareTo(other.value);
 }
 
-Actor duplicateActor(Actor original) => new Actor.duplicate(original);
+abstract class ActorBuilder implements Builder<Actor, ActorBuilder> {
+  int id;
+  String name;
+  Team team = playerTeam;
+//  ActorRelationshipMap safetyFear;
+  Set<Item> items = new Set();
+  @nullable
+  Item currentWeapon;
+  int health = 100;
+  int initiative = 100;
+
+  ActorBuilder._();
+  factory ActorBuilder() = _$ActorBuilder;
+}
