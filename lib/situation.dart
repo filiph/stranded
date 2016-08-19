@@ -13,9 +13,15 @@ part 'situation.g.dart';
 /// and what actors can act (and in what order).
 ///
 /// Situations are stacked on a push-down automaton. [Action]s can push new
-/// situations on the stack, which are then process until completion. Actions
+/// situations on the stack, which are then processed until completion. Actions
 /// can also replace the top-most situation with another one, or remove
 /// the top-most situation.
+///
+/// [Situation] wraps around only two fields: the [id] (designed to be constant
+/// during the situation's lifetime) and [state]. This is because we want to
+/// be able to implement SituationStates easily (there will be a lot of them)
+/// and so we we use composition over inheritance. Inheritance in Built values
+/// is especially tricky.
 ///
 /// Situations need to be classes (not top-level fields) because they need
 /// to be instantiated each time with actor / enemy / time etc.
@@ -46,10 +52,11 @@ abstract class Situation implements Built<Situation, SituationBuilder> {
 }
 
 final Random _random = new Random();
+final int _largeInteger = 0x3FFFFFFF;
 
 abstract class SituationBuilder
     implements Builder<Situation, SituationBuilder> {
-  int id = _random.nextInt(100000000);
+  int id = _random.nextInt(_largeInteger);
   SituationState state;
 
   SituationBuilder._();
@@ -77,4 +84,14 @@ abstract class SituationState {
   Iterable<Actor> getActors(Iterable<Actor> actors);
 
   Actor get currentActor => getActorAtTime(time);
+}
+
+abstract class ElapsingTime<T, U extends SituationStateBuilderBase> {
+  T elapseTime() => rebuild((U b) => b..time += 1);
+  T rebuild(updates(U b));
+}
+
+abstract class SituationStateBuilderBase {
+  int get time;
+  set time(int value);
 }

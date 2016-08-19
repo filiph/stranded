@@ -10,17 +10,14 @@ import 'package:quiver/core.dart';
 part 'fight_situation.g.dart';
 
 abstract class FightSituation extends SituationState
+    with ElapsingTime<FightSituation, FightSituationBuilder>
     implements Built<FightSituation, FightSituationBuilder> {
   int get time;
   BuiltList<Actor> get playerTeam;
   BuiltList<Actor> get enemyTeam;
 
-//  FightSituation(this.playerTeam, this.enemyTeam, {int time: 0}) : super(time);
   FightSituation._();
   factory FightSituation([updates(FightSituationBuilder b)]) = _$FightSituation;
-
-  @override
-  FightSituation elapseTime() => rebuild((b) => b..time += 1);
 
   @override
   Actor getActorAtTime(int i) {
@@ -39,7 +36,9 @@ abstract class FightSituation extends SituationState
 }
 
 abstract class FightSituationBuilder
-    implements Builder<FightSituation, FightSituationBuilder> {
+    implements
+        Builder<FightSituation, FightSituationBuilder>,
+        SituationStateBuilderBase {
   int time = 0;
   BuiltList<Actor> playerTeam;
   BuiltList<Actor> enemyTeam;
