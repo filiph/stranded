@@ -12,6 +12,6 @@ Future main(List<String> args) async {
   await build(
       new PhaseGroup.singleAction(
           new GeneratorBuilder([new BuiltValueGenerator()]),
-          new InputSet('stranded', const ['lib/*.dart'])),
+          new InputSet('stranded', const ['lib/*.dart', 'bin/**/*.dart'])),
       deleteFilesByDefault: true);
 }

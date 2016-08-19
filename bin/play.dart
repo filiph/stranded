@@ -13,6 +13,7 @@ import 'src/situations/fight/fight_situation.dart';
 import 'src/situations/fight/dash.dart';
 import 'package:stranded/team.dart';
 import 'src/situations/fight/dodge_dash.dart';
+import 'package:stranded/situation.dart';
 
 main() {
   var filip = new Actor((b) => b
@@ -35,9 +36,9 @@ main() {
     ..currentWeapon = new Sword()
     ..team = defaultEnemyTeam);
 
-  var initialSituation = new FightSituation(
-      new BuiltList<Actor>([filip, sedgwick, brant]),
-      new BuiltList<Actor>([goon]));
+  var initialSituation = new Situation.withState(new FightSituation((b) => b
+    ..playerTeam = new BuiltList<Actor>([filip, sedgwick, brant])
+    ..enemyTeam = new BuiltList<Actor>([goon])));
 
   WorldState world = new WorldState(
       new Set.from([filip, sedgwick, brant, goon]), initialSituation);
@@ -54,7 +55,7 @@ main() {
 
   while (world.situations.isNotEmpty) {
     var situation = world.currentSituation;
-    var actor = situation.currentActor;
+    var actor = situation.state.currentActor;
 
     List<ActorAction> availableActions;
     if (situation.actionBuilderWhitelist != null) {

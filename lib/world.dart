@@ -1,7 +1,5 @@
 library stranded.world;
 
-import 'dart:collection';
-
 import 'package:quiver/core.dart';
 
 import 'package:stranded/action_record.dart';
@@ -19,7 +17,7 @@ class WorldState {
   /// A stack of situations. The top-most (first) one is the [currentSituation].
   ///
   /// This is a push-down automaton.
-  final Queue<Situation> situations;
+  final List<Situation> situations;
 
   Situation get currentSituation => situations.last;
 
@@ -30,7 +28,7 @@ class WorldState {
       : actionRecords = new Set(),
         items = new Set(),
         locations = new Set(),
-        situations = new Queue.from([startingSituation]),
+        situations = new List.from([startingSituation]),
         time = 0;
 
   /// Creates a deep clone of [other].
@@ -39,16 +37,15 @@ class WorldState {
         actionRecords = new Set<ActionRecord>(),
         items = new Set<Item>(),
         locations = new Set(),
-        situations = new Queue() {
+        situations = new List() {
     actors.addAll(other.actors);
     // TODO: duplicateActionRecord, item, etc.
     actionRecords.addAll(other.actionRecords
         .map((otherRecord) => new ActionRecord.duplicate(otherRecord)));
-    items.addAll(other.items.map((otherItem) => new Item.duplicate(otherItem)));
+    items.addAll(other.items);
     locations.addAll(other.locations
         .map((otherLocation) => new Location.duplicate(otherLocation)));
-    situations.addAll(
-        other.situations.map((otherSituation) => otherSituation.clone()));
+    situations.addAll(other.situations);
 
     time = other.time;
   }
@@ -60,6 +57,19 @@ class WorldState {
     var updated = original.rebuild(updates);
     actors.remove(original);
     actors.add(updated);
+  }
+
+  void updateSituationById(int id, updates(SituationBuilder b)) {
+    int index;
+    for (int i = 0; i < situations.length; i++) {
+      if (situations[i].id == id) {
+        index = i;
+        break;
+      }
+    }
+    if (index == null) return;
+
+    situations[index] = situations[index].rebuild((updates));
   }
 
   void elapseTime() {
@@ -77,7 +87,7 @@ class WorldState {
   toString() => "World<${actors.toSet()}>";
 
   void pushSituation(Situation situation) {
-    situations.addLast(situation);
+    situations.add(situation);
   }
 
   void popSituation() {

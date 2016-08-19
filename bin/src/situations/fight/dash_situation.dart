@@ -1,24 +1,32 @@
+library stranded.fight.dash_situation;
+
+import 'package:built_value/built_value.dart';
+
 import 'package:stranded/situation.dart';
 import 'package:stranded/actor.dart';
 import 'package:quiver/core.dart';
 import 'package:stranded/action.dart';
 import 'dodge_dash.dart';
 
-class DashSituation extends Situation {
-  final Actor attacker;
-  final Actor target;
+part 'dash_situation.g.dart';
 
-  DashSituation(this.attacker, this.target, {int time: 0}) : super(time);
+abstract class DashSituation extends SituationState
+    implements Built<DashSituation, DashSituationBuilder> {
+  int get time;
+  Actor get attacker;
+  Actor get target;
 
-  List<ActionGenerator> actionBuilderWhitelist = <ActionGenerator>[dodgeDash];
+  DashSituation._();
+  factory DashSituation([updates(DashSituationBuilder b)]) = _$DashSituation;
+  factory DashSituation.withValues(Actor attacker, Actor target,
+          {int time: 0}) =>
+      new DashSituation((b) => b
+        ..attacker = attacker
+        ..target = target
+        ..time = time);
 
-  @override
-  Situation clone() => new DashSituation(
-      attacker, target,
-      time: time);
-
-  @override
-  int get hashCode => hash2(attacker, target);
+  List<ActionGenerator> get actionBuilderWhitelist =>
+      <ActionGenerator>[dodgeDash];
 
   @override
   Actor getActorAtTime(int i) {
@@ -28,6 +36,19 @@ class DashSituation extends Situation {
   }
 
   @override
+  DashSituation elapseTime() => rebuild((b) => b..time += 1);
+
+  @override
   Iterable<Actor> getActors(Iterable<Actor> actors) =>
       actors.where((actor) => actor == attacker || actor == target);
+}
+
+abstract class DashSituationBuilder
+    implements Builder<DashSituation, DashSituationBuilder> {
+  int time = 0;
+  Actor attacker;
+  Actor target;
+
+  DashSituationBuilder._();
+  factory DashSituationBuilder() = _$DashSituationBuilder;
 }

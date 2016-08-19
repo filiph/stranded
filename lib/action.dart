@@ -26,9 +26,10 @@ abstract class ActorAction {
           worldCopy.actors.singleWhere((a) => a.id == actor.id);
       var builder = _prepareWorldRecord(actor, world);
       // Remember situation as it can be changed during applySuccess.
-      var situation = worldCopy.currentSituation;
+      var situationId = worldCopy.currentSituation.id;
       _description = applySuccess(actorInWorldCopy, worldCopy);
-      situation.elapseTime();
+      worldCopy.updateSituationById(
+          situationId, (b) => b.state = b.state.elapseTime());
       worldCopy.elapseTime();
       _addWorldRecord(builder, worldCopy);
 
@@ -47,9 +48,10 @@ abstract class ActorAction {
           worldCopy.actors.singleWhere((a) => a.id == actor.id);
       var builder = _prepareWorldRecord(actor, world);
       // Remember situation as it can be changed during applyFailure.
-      var situation = worldCopy.currentSituation;
+      var situationId = worldCopy.currentSituation.id;
       _description = applyFailure(actorInWorldCopy, worldCopy);
-      situation.elapseTime();
+      worldCopy.updateSituationById(
+          situationId, (b) => b.state = b.state.elapseTime());
       worldCopy.elapseTime();
       _addWorldRecord(builder, worldCopy);
 
@@ -137,7 +139,7 @@ class EnemyTargetActionGenerator extends ActionGenerator {
 
   @override
   Iterable<ActorAction> build(Actor actor, WorldState world) {
-    var enemies = world.currentSituation
+    var enemies = world.currentSituation.state
         .getActors(world.actors)
         .where((other) => other.team.isEnemyWith(actor.team));
     return enemies.map/*<ActorAction>*/((Actor enemy) => new EnemyTargetAction(

@@ -1,23 +1,26 @@
+library stranded.fight.fight_situation;
+
+import 'package:built_value/built_value.dart';
 import 'package:built_collection/built_collection.dart';
 
 import 'package:stranded/situation.dart';
 import 'package:stranded/actor.dart';
 import 'package:quiver/core.dart';
 
-class FightSituation extends Situation {
-  final BuiltList<Actor> playerTeam;
-  final BuiltList<Actor> enemyTeam;
+part 'fight_situation.g.dart';
 
-  FightSituation(this.playerTeam, this.enemyTeam, {int time: 0}) : super(time);
+abstract class FightSituation extends SituationState
+    implements Built<FightSituation, FightSituationBuilder> {
+  int get time;
+  BuiltList<Actor> get playerTeam;
+  BuiltList<Actor> get enemyTeam;
+
+//  FightSituation(this.playerTeam, this.enemyTeam, {int time: 0}) : super(time);
+  FightSituation._();
+  factory FightSituation([updates(FightSituationBuilder b)]) = _$FightSituation;
 
   @override
-  Situation clone() => new FightSituation(
-      playerTeam,
-      enemyTeam,
-      time: time);
-
-  @override
-  int get hashCode => hash2(hashObjects(playerTeam), hashObjects(enemyTeam));
+  FightSituation elapseTime() => rebuild((b) => b..time += 1);
 
   @override
   Actor getActorAtTime(int i) {
@@ -33,4 +36,14 @@ class FightSituation extends Situation {
   @override
   Iterable<Actor> getActors(Iterable<Actor> actors) => actors.where(
       (actor) => playerTeam.contains(actor) || enemyTeam.contains(actor));
+}
+
+abstract class FightSituationBuilder
+    implements Builder<FightSituation, FightSituationBuilder> {
+  int time = 0;
+  BuiltList<Actor> playerTeam;
+  BuiltList<Actor> enemyTeam;
+
+  FightSituationBuilder._();
+  factory FightSituationBuilder() = _$FightSituationBuilder;
 }
