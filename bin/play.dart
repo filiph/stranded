@@ -44,7 +44,7 @@ main() {
 
   Set<ActorAction> actions = new Set<ActorAction>();
 
-  Set<ActionBuilder> actionBuilders = new Set<ActionBuilder>();
+  Set<ActionGenerator> actionBuilders = new Set<ActionGenerator>();
   actionBuilders.add(dashWithSword);
   actionBuilders.add(dodgeDash);
 

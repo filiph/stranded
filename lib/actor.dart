@@ -38,7 +38,6 @@ class ActorRelationshipMap extends ActorMap<Scale> {
   }
 }
 
-
 abstract class Actor implements Built<Actor, ActorBuilder> {
   /// Names can change or can even be duplicate. [id] is the only safe way
   /// to find out if we're talking about the same actor.

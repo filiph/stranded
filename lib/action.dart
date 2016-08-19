@@ -118,18 +118,18 @@ class ClosureActorAction extends ActorAction {
 /// For example, an action builder called `hitWithStick` can take the current
 /// world and output as many actions as there are things to hit with a stick.
 /// Each generated action will encapsulate the thing to hit.
-abstract class ActionBuilder {
+abstract class ActionGenerator {
   Iterable<ActorAction> build(Actor actor, WorldState world);
 }
 
-class EnemyTargetActionBuilder extends ActionBuilder {
+class EnemyTargetActionGenerator extends ActionGenerator {
   final String name;
   final EnemyTargetApplicabilityFunction valid;
   final EnemyTargetActionFunction success;
   final EnemyTargetActionFunction failure;
   final num chance;
 
-  EnemyTargetActionBuilder(this.name,
+  EnemyTargetActionGenerator(this.name,
       {@required this.valid,
       this.success,
       this.failure,

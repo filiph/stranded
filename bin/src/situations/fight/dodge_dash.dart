@@ -4,7 +4,7 @@ import 'package:stranded/item.dart';
 import 'dash_situation.dart';
 import 'package:stranded/world.dart';
 
-var dodgeDash = new EnemyTargetActionBuilder("dodge dash",
+var dodgeDash = new EnemyTargetActionGenerator("dodge dash",
     valid: (Actor a, enemy, WorldState w) =>
         w.currentSituation is DashSituation && a.wields(ItemType.SWORD),
     chance: 0.5, success: (a, enemy, WorldState w) {

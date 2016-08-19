@@ -23,7 +23,7 @@ abstract class Situation {
   /// When this is `null`, then all actions are allowed.
   ///
   /// TODO: add actionWhitelist?
-  Iterable<ActionBuilder> get actionBuilderWhitelist => null;
+  Iterable<ActionGenerator> get actionBuilderWhitelist => null;
 
   /// Filters the [actors] that are active in this situation.
   Iterable<Actor> getActors(Iterable<Actor> actors);

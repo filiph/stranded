@@ -10,7 +10,7 @@ class DashSituation extends Situation {
 
   DashSituation(this.attacker, this.target, {int time: 0}) : super(time);
 
-  List<ActionBuilder> actionBuilderWhitelist = <ActionBuilder>[dodgeDash];
+  List<ActionGenerator> actionBuilderWhitelist = <ActionGenerator>[dodgeDash];
 
   @override
   Situation clone() => new DashSituation(

@@ -4,6 +4,10 @@ import 'package:quiver/core.dart';
 import 'package:stranded/actor.dart';
 import 'package:stranded/world.dart';
 
+
+
+int _extractId(Actor actor) => actor.id;
+
 /// A record of some event action that transpired.
 ///
 /// Every action gets ActionRecord which says who did that action (some strings
@@ -21,9 +25,6 @@ import 'package:stranded/world.dart';
 /// - applying personal bias (optimist, pesimist)
 /// - applying all `ActionRecord`s that the subject knows about that the other
 ///   person is responsible for
-
-int _extractId(Actor actor) => actor.id;
-
 class ActionRecord {
   final String description;
 
