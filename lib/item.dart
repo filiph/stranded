@@ -23,28 +23,14 @@ String typeToDescription(ItemType type) {
 
 Random _random = new Random();
 
-abstract class Item {
+abstract class Item<T extends Item> {
   final ItemType type;
-  final String description;
+  String get description => typeToDescription(type);
 
-  int _hash;
-
-  Item(ItemType type, {int hashCode})
-      : type = type,
-        description = typeToDescription(type) {
-    _hash = hashCode ?? _random.nextInt(0xffffffff);
-  }
-
-  factory Item.duplicate(Item other) => other.copy(identical: true);
+  const Item(this.type);
 
   /// Makes a copy of instance. To be overridden by subclasses.
-  ///
-  /// When [identical] is `true`, the returned copy should have the same
-  /// hashCode as this instance.
-  Item copy({bool identical: false});
-
-  @override
-  int get hashCode => _hash;
+  T copy();
 
   /// When `true`, having more of [this] makes the person happier.
   ///
@@ -64,44 +50,39 @@ abstract class Item {
   /// you to traps, which get you to food.
   num get luxuryScore;
 
-  bool operator ==(o) => o is Item && hashCode == o.hashCode;
-
   /// Creates [value] number of copies (that's including this instance).
-  Iterable<dynamic> operator *(int value) {
-    var list = new List<dynamic>.generate(value - 1, (i) => copy());
+  Iterable<T> operator *(int value) {
+    var list = new List<T>.generate(value - 1, (i) => copy());
     list.insert(0, this);
     return list;
   }
 }
 
-class Branch extends Item {
-  Branch({int hashCode}) : super(ItemType.BRANCH, hashCode: hashCode);
+class Branch extends Item<Branch> {
+  const Branch() : super(ItemType.BRANCH);
 
-  Branch copy({bool identical: false}) =>
-      new Branch(hashCode: identical ? hashCode : null);
+  Branch copy() => new Branch();
 
-  bool luxuryIsCumulative = false;
-  num luxuryScore = 0;
+  final bool luxuryIsCumulative = false;
+  final num luxuryScore = 0;
 }
 
-class Tent extends Item {
-  Tent({int hashCode}) : super(ItemType.TENT, hashCode: hashCode);
+class Tent extends Item<Tent> {
+  const Tent() : super(ItemType.TENT);
 
-  Tent copy({bool identical: false}) =>
-      new Tent(hashCode: identical ? hashCode : null);
+  Tent copy() => new Tent();
 
-  bool luxuryIsCumulative = false;
-  num luxuryScore = 10;
+  final bool luxuryIsCumulative = false;
+  final num luxuryScore = 10;
 }
 
 class Sword extends Item {
-  Sword({int hashCode}) : super(ItemType.SWORD, hashCode: hashCode);
+  const Sword() : super(ItemType.SWORD);
 
-  Sword copy({bool identical: false}) =>
-      new Sword(hashCode: identical ? hashCode : null);
+  Sword copy() => new Sword();
 
-  bool luxuryIsCumulative = false;
-  num luxuryScore = 10;
+  final bool luxuryIsCumulative = false;
+  final num luxuryScore = 10;
 }
 
 // trap
