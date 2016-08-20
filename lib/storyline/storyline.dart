@@ -197,6 +197,16 @@ class Storyline {
         time: time));
   }
 
+  /// Appends [other] storyline to this one.
+  void concatenate(Storyline other) {
+    if (strBuf.isNotEmpty) {
+      throw new StateError("Please only concatenate to clean storylines "
+          "(do not try to do this when some of the storyline is already "
+          "being outputted).");
+    }
+    reports.addAll(other.reports);
+  }
+
   /**
    * Add a sentence (or more) enumerating several things ([articles]) at once.
    * Example: "You can see a handkerchief, a brush and a mirror here."

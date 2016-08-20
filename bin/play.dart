@@ -8,31 +8,38 @@ import 'package:stranded/planner.dart';
 import 'package:stranded/action.dart';
 import 'package:stranded/item.dart';
 import 'package:stranded/plan_consequence.dart';
+import 'package:stranded/team.dart';
+import 'package:stranded/situation.dart';
+import 'package:stranded/storyline/storyline.dart';
 
 import 'src/situations/fight/fight_situation.dart';
 import 'src/situations/fight/dash.dart';
-import 'package:stranded/team.dart';
 import 'src/situations/fight/dodge_dash.dart';
-import 'package:stranded/situation.dart';
 
 main() {
   var filip = new Actor((b) => b
     ..id = 1
+    ..isPlayer = true
+    ..pronoun = Pronoun.YOU
     ..name = "Filip"
     ..currentWeapon = new Sword()
     ..initiative = 1000);
   var sedgwick = new Actor((b) => b
     ..id = 100
+    ..pronoun = Pronoun.HE
     ..name = "Sedgwick"
     ..currentWeapon = new Sword());
   var brant = new Actor((b) => b
     ..id = 500
+    ..pronoun = Pronoun.HE
     ..name = "Brant"
     ..currentWeapon = new Sword());
 
   var goon = new Actor((b) => b
     ..id = 1000
-    ..name = "Goon"
+    ..name = "goon"
+    ..nameIsProperNoun = false
+    ..pronoun = Pronoun.HE
     ..currentWeapon = new Sword()
     ..team = defaultEnemyTeam);
 
@@ -52,6 +59,7 @@ main() {
 //  world.validate();
 
   var consequence = new PlanConsequence.initial(world);
+  var storyline = new Storyline();
 
   while (world.situations.isNotEmpty) {
     var situation = world.currentSituation;
@@ -75,21 +83,25 @@ main() {
         .removeWhere((action) => !action.isApplicable(actor, world));
 
     var planner = new ActorPlanner(actor, world, availableActions);
-    print("Planning for ${actor.name}");
+//    print("Planning for ${actor.name}");
     planner.plan();
 
     ActorAction selected;
     if (actor == filip) {
       // Player
+      print(storyline.toString());
+      storyline.clear();
+
       planner.generateTable().forEach(print);
       int option = int.parse(stdin.readLineSync());
       selected = planner.firstActionScores.keys.toList()[option];
     } else {
       selected = planner.getBest();
     }
-    print("${actor.name} selects $selected");
+//    print("${actor.name} selects $selected");
     var consequences = selected.apply(actor, consequence, world).toSet();
     consequence = consequences.first; // TODO: Actually pick by random.
+    storyline.concatenate(consequence.storyline);
     world = consequence.world;
   }
 }

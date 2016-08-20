@@ -220,7 +220,7 @@ abstract class ActorBuilder implements Builder<Actor, ActorBuilder> {
   bool isPlayer = false;
   Set<Item> items = new Set();
   String name;
-  bool nameIsProperNoun = false;
+  bool nameIsProperNoun = true;
   Pronoun pronoun = Pronoun.IT;
   Team team = playerTeam;
 //  ActorRelationshipMap safetyFear;

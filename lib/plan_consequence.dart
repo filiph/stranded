@@ -3,10 +3,12 @@ library stranded.plan_consequence;
 import 'package:quiver/core.dart';
 import 'package:stranded/action.dart';
 import 'package:stranded/world.dart';
+import 'package:stranded/storyline/storyline.dart';
 
 class PlanConsequence {
   final WorldState world;
   final ActorAction action;
+  final Storyline storyline;
   final num probability;
   final num cumulativeProbability;
 
@@ -17,8 +19,8 @@ class PlanConsequence {
   /// How far are we from initial world state.
   final int order;
 
-  PlanConsequence(
-      this.world, PlanConsequence previous, this.action, num probability,
+  PlanConsequence(this.world, PlanConsequence previous, this.action,
+      this.storyline, num probability,
       {this.isInitial: false, this.isFailure: false, this.isSuccess: false})
       : order = previous == null ? 0 : previous.order + 1,
         cumulativeProbability = previous == null
@@ -27,7 +29,7 @@ class PlanConsequence {
         probability = probability;
 
   PlanConsequence.initial(WorldState world)
-      : this(world, null, null, 1.0, isInitial: true);
+      : this(world, null, null, new Storyline(), 1.0, isInitial: true);
 
   @override
   int get hashCode => hashObjects([

@@ -8,7 +8,8 @@ import 'package:stranded/plan_consequence.dart';
 import 'package:stranded/action_record.dart';
 import 'package:stranded/storyline/storyline.dart';
 
-typedef String _ActorActionFunction(Actor actor, WorldState world);
+typedef String _ActorActionFunction(
+    Actor actor, WorldState world, Storyline storyline);
 
 // TODO: use this to have more than 2 outcomes
 //class Consequence {
@@ -26,6 +27,7 @@ abstract class ActorAction {
     var successChance = getSuccessChance(actor, current.world);
     assert(successChance != null);
 
+    // TODO: DRY + more than two outcomes (use Randomly.chooseWeighted)
     if (successChance > 0) {
       var worldCopy = new WorldState.duplicate(world);
       var actorInWorldCopy =
@@ -33,18 +35,21 @@ abstract class ActorAction {
       var builder = _prepareWorldRecord(actor, world);
       // Remember situation as it can be changed during applySuccess.
       var situationId = worldCopy.currentSituation.id;
-      _description = applySuccess(actorInWorldCopy, worldCopy);
+      var storyline = new Storyline();
+      _description = applySuccess(actorInWorldCopy, worldCopy, storyline);
       worldCopy.updateSituationById(
           situationId, (b) => b.state = b.state.elapseTime());
       worldCopy.elapseTime();
       _addWorldRecord(builder, worldCopy);
 
-      yield new PlanConsequence(worldCopy, current, this, successChance,
+      yield new PlanConsequence(
+          worldCopy, current, this, storyline, successChance,
           isSuccess: true);
     }
     if (successChance < 1) {
       if (!failureModifiesWorld) {
-        yield new PlanConsequence(world, current, this, 1 - successChance,
+        yield new PlanConsequence(
+            world, current, this, new Storyline(), 1 - successChance,
             isFailure: true);
         return;
       }
@@ -55,20 +60,22 @@ abstract class ActorAction {
       var builder = _prepareWorldRecord(actor, world);
       // Remember situation as it can be changed during applyFailure.
       var situationId = worldCopy.currentSituation.id;
-      _description = applyFailure(actorInWorldCopy, worldCopy);
+      var storyline = new Storyline();
+      _description = applyFailure(actorInWorldCopy, worldCopy, storyline);
       worldCopy.updateSituationById(
           situationId, (b) => b.state = b.state.elapseTime());
       worldCopy.elapseTime();
       _addWorldRecord(builder, worldCopy);
 
-      yield new PlanConsequence(worldCopy, current, this, 1 - successChance,
+      yield new PlanConsequence(
+          worldCopy, current, this, storyline, 1 - successChance,
           isFailure: true);
     }
   }
 
   /// Changes the [world].
-  String applyFailure(Actor actor, WorldState world);
-  String applySuccess(Actor actor, WorldState world);
+  String applyFailure(Actor actor, WorldState world, Storyline storyline);
+  String applySuccess(Actor actor, WorldState world, Storyline storyline);
 
   /// Success chance of the action given the actor and the state of the world.
   num getSuccessChance(Actor actor, WorldState world);
@@ -107,11 +114,11 @@ class ClosureActorAction extends ActorAction {
       : _applyFailure = applyFailure,
         failureModifiesWorld = applyFailure != null;
 
-  String applyFailure(Actor actor, WorldState world) =>
-      _applyFailure(actor, world);
+  String applyFailure(Actor actor, WorldState world, Storyline storyline) =>
+      _applyFailure(actor, world, storyline);
 
-  String applySuccess(Actor actor, WorldState world) =>
-      _applySuccess(actor, world);
+  String applySuccess(Actor actor, WorldState world, Storyline storyline) =>
+      _applySuccess(actor, world, storyline);
 
   num getSuccessChance(Actor actor, WorldState world) => successChance;
   bool isApplicable(Actor actor, WorldState world) =>
@@ -176,12 +183,12 @@ class EnemyTargetAction extends ActorAction {
       @required this.chance});
 
   @override
-  String applyFailure(Actor actor, WorldState world) =>
-      failure(actor, enemy, world);
+  String applyFailure(Actor actor, WorldState world, Storyline storyline) =>
+      failure(actor, enemy, world, storyline);
 
   @override
-  String applySuccess(Actor actor, WorldState world) =>
-      success(actor, enemy, world);
+  String applySuccess(Actor actor, WorldState world, Storyline storyline) =>
+      success(actor, enemy, world, storyline);
 
   @override
   bool get failureModifiesWorld => failure != null;
@@ -201,4 +208,4 @@ typedef bool EnemyTargetApplicabilityFunction(
     Actor actor, Actor enemy, WorldState world);
 
 typedef String EnemyTargetActionFunction(
-    Actor actor, Actor enemy, WorldState world);
+    Actor actor, Actor enemy, WorldState world, Storyline storyline);
