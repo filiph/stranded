@@ -7,19 +7,7 @@ part of storyline;
  * They have a [name], they are referred to by a [pronoun] and more often
  * than not they are at a [location].
  */
-class Entity {
-  Entity({this.name,
-      this.pronoun: Pronoun.IT,
-      Team team,
-      this.isPlayer: false,
-      this.nameIsProperNoun: false,
-      this.alreadyMentioned: true})
-      : this.team = team ?? neutralTeam;
-
-  Entity._(
-      this.name, this.nameIsProperNoun, this.pronoun, Team team, this.isPlayer)
-      : this.team = team ?? neutralTeam;
-
+class Entity extends Object with EntityBehavior {
   /// Used to allow passing arguments that are automatically generated from
   /// context. In this case, a method can accept both a [:null:] Entity (i.e.
   /// what makes most sense given other arguments) or [Entity.NOTHING] (i.e.
@@ -61,37 +49,55 @@ class Entity {
 
   Team team = neutralTeam;
 
-  bool isEnemyOf(Entity other) {
-    if (team == neutralTeam || other.team == neutralTeam) return false;
-    return team != other.team;
-  }
-
   /**
    * Whether or not this entity should be shown to the player. This can be useful
    * for entities that are only relevant later in the game (i.e. after player
    * does something else) or items that become irrelevant after use.
    */
   bool isActive = true;
+
   final bool isPlayer;
 
   final Pronoun pronoun;
 
-  // TODO: needsArticle (handkerchief does, Gorilla doesn't, captain's gun doesn't)
-  // TODO: alreadyReferredTo (false? article = a. true? article = the)
+  Entity({this.name,
+      this.pronoun: Pronoun.IT,
+      Team team,
+      this.isPlayer: false,
+      this.nameIsProperNoun: false,
+      this.alreadyMentioned: true})
+      : this.team = team ?? neutralTeam;
 
-  void report(String text, {Entity object}) {
-    storyline.add(text, subject: this, object: object);
-    // TODO: add stuff
-  }
-
-  Report createReport(String text, {Entity object}) {
-    return new Report(text, subject: this, object: object);
-  }
+  Entity._(
+      this.name, this.nameIsProperNoun, this.pronoun, Team team, this.isPlayer)
+      : this.team = team ?? neutralTeam;
 
   /// True if Actor is alive, i.e. not destroyed or dead.
   bool get isAlive => true;
+}
+
+/// Mixin that adds important methods and getters to Entity-like classes.
+abstract class EntityBehavior {
+  bool get isActive;
+
+  bool get isAlive;
 
   bool get isAliveAndActive => isAlive && isActive;
+
+  Team get team;
+
+  Report createReport(String text, {Entity object}) {
+    return new Report(text, subject: this as Entity, object: object);
+  }
+
+  bool isEnemyOf(Entity other) {
+    if (team == neutralTeam || other.team == neutralTeam) return false;
+    return team != other.team;
+  }
+
+  void report(Storyline storyline, String text, {Entity object}) {
+    storyline.add(text, subject: this as Entity, object: object);
+  }
 }
 
 class Player extends Entity {

@@ -8,14 +8,6 @@ part 'storyline_pronoun.dart';
 part 'storyline_entity.dart';
 
 /**
- * The global instance of storyline which can be used for reporting. The
- * contents are output to Scripter's [:textBuffer:] either manualy or
- * automatically by LoopedEvent (before each player interaction).
- * TODO: remove and use by reference
- */
-final Storyline storyline = new Storyline();
-
-/**
  * A single report about an event, atomic part of a story. It can be "John
  * picks up a shovel", "John approaches Jack" or "Jack is dead".
  *

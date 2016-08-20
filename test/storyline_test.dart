@@ -3,6 +3,12 @@ import 'package:test/test.dart';
 import 'package:stranded/storyline/storyline.dart';
 import 'package:stranded/team.dart';
 
+/// The 'global' instance of Storyline.
+///
+/// Since Storyline started as a singleton pattern, these tests are written
+/// with that in mind. TODO: pass storyline
+var storyline = new Storyline();
+
 void main() {
   test("simple storyline", () {
     var storyline = new Storyline();

@@ -8,6 +8,7 @@ import 'package:stranded/world.dart';
 import 'package:stranded/action_record.dart';
 import 'package:stranded/item.dart';
 import 'package:stranded/team.dart';
+import 'package:stranded/storyline/storyline.dart';
 
 part 'actor.g.dart';
 
@@ -38,7 +39,9 @@ class ActorRelationshipMap extends ActorMap<Scale> {
   }
 }
 
-abstract class Actor implements Built<Actor, ActorBuilder> {
+abstract class Actor extends Object
+    with EntityBehavior
+    implements Built<Actor, ActorBuilder>, Entity {
   /// Names can change or can even be duplicate. [id] is the only safe way
   /// to find out if we're talking about the same actor.
   int get id;
@@ -68,6 +71,20 @@ abstract class Actor implements Built<Actor, ActorBuilder> {
       currentWeapon != null && currentWeapon.type == value;
 
   int get health;
+
+  bool get alreadyMentioned;
+
+  bool get isActive;
+
+  Pronoun get pronoun;
+
+  List<String> get categories;
+
+  bool get isAlive;
+
+  bool get isPlayer;
+
+  bool get nameIsProperNoun;
 
   /// The higher the initiative, the sooner this actor will act each turn.
   ///
@@ -110,7 +127,6 @@ abstract class Actor implements Built<Actor, ActorBuilder> {
 //    actor.currentWeapon = other.currentWeapon;
 //    return actor;
 //  }
-
 
   /// Scores the state of the [world] in the eyes of [this] Actor.
   ///
@@ -155,7 +171,7 @@ abstract class Actor implements Built<Actor, ActorBuilder> {
     }
     num luxurySum = itemScores.values.fold(0, (prev, val) => prev + val);
 
-    return /*safety + */gratitude + luxurySum;
+    return /*safety + */ gratitude + luxurySum;
   }
 
   /// Computes gratitude towards [other] given the state of the [world].
@@ -264,8 +280,16 @@ abstract class ActorBuilder implements Builder<Actor, ActorBuilder> {
   @nullable
   Item currentWeapon;
   int health = 100;
+  bool alreadyMentioned = true;
+  bool isActive = true;
+  Pronoun pronoun = Pronoun.IT;
+  List<String> categories = <String>[];
+  bool isAlive = true;
+  bool isPlayer = false;
+  bool nameIsProperNoun = false;
   int initiative = 100;
 
   ActorBuilder._();
   factory ActorBuilder() = _$ActorBuilder;
+
 }
