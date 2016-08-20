@@ -6,35 +6,35 @@ import 'package:stranded/situation.dart';
 import 'package:stranded/actor.dart';
 import 'package:quiver/core.dart';
 import 'package:stranded/action.dart';
-import 'dodge_dash.dart';
+import 'dodge_slash.dart';
 
-part 'dash_situation.g.dart';
+part 'slash_situation.g.dart';
 
-abstract class DashSituation extends SituationState
-    with ElapsingTime<DashSituation, DashSituationBuilder>
-    implements Built<DashSituation, DashSituationBuilder> {
+abstract class SlashSituation extends SituationState
+    with ElapsingTime<SlashSituation, SlashSituationBuilder>
+    implements Built<SlashSituation, SlashSituationBuilder> {
   int get time;
   Actor get attacker;
   Actor get target;
 
-  DashSituation._();
-  factory DashSituation([updates(DashSituationBuilder b)]) = _$DashSituation;
-  factory DashSituation.withValues(Actor attacker, Actor target,
+  SlashSituation._();
+  factory SlashSituation([updates(SlashSituationBuilder b)]) = _$SlashSituation;
+  factory SlashSituation.withValues(Actor attacker, Actor target,
           {int time: 0}) =>
-      new DashSituation((b) => b
+      new SlashSituation((b) => b
         ..attacker = attacker
         ..target = target
         ..time = time);
 
   @override
   List<ActionGenerator> get actionBuilderWhitelist =>
-      <ActionGenerator>[dodgeDash];
+      <ActionGenerator>[dodgeSlash];
 
   @override
   Actor getActorAtTime(int time, _) {
     if (time == 0) return target;
     throw new RangeError.range(
-        time, 0, 0, "Only the target has a turn during a dash");
+        time, 0, 0, "Only the target has a turn during a slash");
   }
 
   @override
@@ -42,14 +42,14 @@ abstract class DashSituation extends SituationState
       actors.where((actor) => actor == attacker || actor == target);
 }
 
-abstract class DashSituationBuilder
+abstract class SlashSituationBuilder
     implements
-        Builder<DashSituation, DashSituationBuilder>,
+        Builder<SlashSituation, SlashSituationBuilder>,
         SituationStateBuilderBase {
   int time = 0;
   Actor attacker;
   Actor target;
 
-  DashSituationBuilder._();
-  factory DashSituationBuilder() = _$DashSituationBuilder;
+  SlashSituationBuilder._();
+  factory SlashSituationBuilder() = _$SlashSituationBuilder;
 }

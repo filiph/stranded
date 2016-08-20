@@ -678,13 +678,7 @@ class Storyline {
           else
             strBuf.write(". ");
           if (but && !reports[i].wholeSentence)
-            strBuf.write(Randomly.choose([
-            "But ",
-            "But ",
-            "However, ",
-            "Nonetheless, ",
-            "Nevertheless, "
-          ]));
+            strBuf.write("But ");
         } else {
           // let's try and glue [i-1] and [i] into one sentence
           if (but) {

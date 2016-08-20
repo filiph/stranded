@@ -4,26 +4,26 @@ part of stranded.fight.dash_situation;
 
 // **************************************************************************
 // Generator: BuiltValueGenerator
-// Target: abstract class DashSituation
+// Target: abstract class SlashSituation
 // **************************************************************************
 
-class _$DashSituation extends DashSituation {
+class _$SlashSituation extends SlashSituation {
   final int time;
   final Actor attacker;
   final Actor target;
-  _$DashSituation._({this.time, this.attacker, this.target}) : super._() {
+  _$SlashSituation._({this.time, this.attacker, this.target}) : super._() {
     if (time == null) throw new ArgumentError('null time');
     if (attacker == null) throw new ArgumentError('null attacker');
     if (target == null) throw new ArgumentError('null target');
   }
-  factory _$DashSituation([updates(DashSituationBuilder b)]) =>
-      (new DashSituationBuilder()..update(updates)).build();
-  DashSituation rebuild(updates(DashSituationBuilder b)) =>
+  factory _$SlashSituation([updates(SlashSituationBuilder b)]) =>
+      (new SlashSituationBuilder()..update(updates)).build();
+  SlashSituation rebuild(updates(SlashSituationBuilder b)) =>
       (toBuilder()..update(updates)).build();
-  _$DashSituationBuilder toBuilder() =>
-      new _$DashSituationBuilder()..replace(this);
+  _$SlashSituationBuilder toBuilder() =>
+      new _$SlashSituationBuilder()..replace(this);
   bool operator ==(other) {
-    if (other is! DashSituation) return false;
+    if (other is! SlashSituation) return false;
     return time == other.time &&
         attacker == other.attacker &&
         target == other.target;
@@ -34,7 +34,7 @@ class _$DashSituation extends DashSituation {
   }
 
   String toString() {
-    return 'DashSituation {'
+    return 'SlashSituation {'
         'time=${time.toString()}\n'
         'attacker=${attacker.toString()}\n'
         'target=${target.toString()}\n'
@@ -42,23 +42,23 @@ class _$DashSituation extends DashSituation {
   }
 }
 
-class _$DashSituationBuilder extends DashSituationBuilder {
-  _$DashSituationBuilder() : super._();
-  void replace(DashSituation other) {
+class _$SlashSituationBuilder extends SlashSituationBuilder {
+  _$SlashSituationBuilder() : super._();
+  void replace(SlashSituation other) {
     super.time = other.time;
     super.attacker = other.attacker;
     super.target = other.target;
   }
 
-  void update(updates(DashSituationBuilder b)) {
+  void update(updates(SlashSituationBuilder b)) {
     if (updates != null) updates(this);
   }
 
-  DashSituation build() {
+  SlashSituation build() {
     if (time == null) throw new ArgumentError('null time');
     if (attacker == null) throw new ArgumentError('null attacker');
     if (target == null) throw new ArgumentError('null target');
-    return new _$DashSituation._(
+    return new _$SlashSituation._(
         time: time, attacker: attacker, target: target);
   }
 }

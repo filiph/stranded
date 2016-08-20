@@ -13,8 +13,8 @@ import 'package:stranded/situation.dart';
 import 'package:stranded/storyline/storyline.dart';
 
 import 'src/situations/fight/fight_situation.dart';
-import 'src/situations/fight/dash.dart';
-import 'src/situations/fight/dodge_dash.dart';
+import 'src/situations/fight/slash.dart';
+import 'src/situations/fight/dodge_slash.dart';
 import 'package:stranded/storyline/randomly.dart';
 
 main() {
@@ -54,8 +54,8 @@ main() {
   Set<ActorAction> actions = new Set<ActorAction>();
 
   Set<ActionGenerator> actionBuilders = new Set<ActionGenerator>();
-  actionBuilders.add(dashWithSword);
-  actionBuilders.add(dodgeDash);
+  actionBuilders.add(slashWithSword);
+  actionBuilders.add(dodgeSlash);
 
 //  world.validate();
 

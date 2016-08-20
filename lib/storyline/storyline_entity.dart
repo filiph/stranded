@@ -97,12 +97,16 @@ abstract class EntityBehavior {
   }
 
   void report(Storyline storyline, String text,
-      {Entity object, bool positive: false, bool negative: false}) {
+      {Entity object,
+      bool positive: false,
+      bool negative: false,
+      bool but: false}) {
     storyline.add(text,
         subject: this as Entity,
         object: object,
         positive: positive,
-        negative: negative);
+        negative: negative,
+        but: but);
   }
 }
 
