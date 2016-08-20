@@ -6,6 +6,7 @@ import 'package:built_value/built_value.dart';
 
 import 'action.dart';
 import 'actor.dart';
+import 'world.dart';
 
 part 'situation.g.dart';
 
@@ -46,6 +47,10 @@ abstract class Situation implements Built<Situation, SituationBuilder> {
   Iterable<ActionGenerator> get actionBuilderWhitelist =>
       state.actionBuilderWhitelist;
 
+  void update(WorldState world) {
+    state.update(world);
+  }
+
   // TODO: toMap (save [time] as well as currentActor (because we want to make
   //       sure that we load with the same actor although some actors may have
   //       been removed from play))
@@ -68,7 +73,7 @@ abstract class SituationState {
   int get time;
 
   /// Returns the actor whose turn it is at specified [time].
-  Actor getActorAtTime(int i);
+  Actor getActorAtTime(int time, WorldState world);
 
   /// Whitelist of action builders that can be used by actors in this situation.
   ///
@@ -77,13 +82,17 @@ abstract class SituationState {
   /// TODO: add actionWhitelist?
   Iterable<ActionGenerator> get actionBuilderWhitelist => null;
 
+  void update(WorldState world) {
+    // No-op by default.
+  }
+
   /// Returns updated state with `time++`.
   SituationState elapseTime();
 
   /// Filters the [actors] that are active in this situation.
   Iterable<Actor> getActors(Iterable<Actor> actors);
 
-  Actor get currentActor => getActorAtTime(time);
+  Actor getCurrentActor(WorldState world) => getActorAtTime(time, world);
 }
 
 abstract class ElapsingTime<T, U extends SituationStateBuilderBase> {

@@ -40,6 +40,7 @@ abstract class ActorAction {
       worldCopy.updateSituationById(
           situationId, (b) => b.state = b.state.elapseTime());
       worldCopy.elapseTime();
+      worldCopy.currentSituation.update(worldCopy);
       _addWorldRecord(builder, worldCopy);
 
       yield new PlanConsequence(
@@ -65,6 +66,7 @@ abstract class ActorAction {
       worldCopy.updateSituationById(
           situationId, (b) => b.state = b.state.elapseTime());
       worldCopy.elapseTime();
+      worldCopy.currentSituation.update(worldCopy);
       _addWorldRecord(builder, worldCopy);
 
       yield new PlanConsequence(
@@ -152,8 +154,9 @@ class EnemyTargetActionGenerator extends ActionGenerator {
 
   @override
   Iterable<ActorAction> build(Actor actor, WorldState world) {
-    var enemies = world.currentSituation.state
-        .getActors(world.actors)
+    var situationActors = world.currentSituation.state
+        .getActors(world.actors);
+    var enemies = situationActors
         .where((other) => other.team.isEnemyWith(actor.team));
     return enemies.map/*<ActorAction>*/((Actor enemy) => new EnemyTargetAction(
         name,

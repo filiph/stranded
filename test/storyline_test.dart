@@ -129,8 +129,10 @@ void main() {
         subject: enemy, object: enemy2);
     storyline.add("<subject> give<s> <object> the money",
         subject: enemy, object: enemy2);
-    expect(storyline.toString(),
-        matches("John meets Jack at the station. He gives him the money."));
+    expect(
+        storyline.toString(),
+        matches("John meets Jack at the station.+"
+            "gives him the money."));
   });
 
   test("don't substitute pronouns where confusing ('it hits it')", () {
@@ -223,8 +225,8 @@ void main() {
     var storyline = new Storyline();
     var player = new Player("Filip");
     var gun = new Entity(name: "gun", team: playerTeam, pronoun: Pronoun.IT);
-    var enemy = new Entity(
-        name: "enemy", team: defaultEnemyTeam, pronoun: Pronoun.HE);
+    var enemy =
+        new Entity(name: "enemy", team: defaultEnemyTeam, pronoun: Pronoun.HE);
     storyline.add("<owner's> <subject> <is> pointed at <object>",
         owner: player, subject: gun, object: enemy, time: 1);
     storyline.add("<subject> fire<s>", subject: gun, time: 2);
@@ -232,8 +234,8 @@ void main() {
         matches("Your gun is pointed at the enemy.+t fires."));
 
     storyline.clear();
-    var ship = new Entity(
-        name: "ship", team: defaultEnemyTeam, pronoun: Pronoun.SHE);
+    var ship =
+        new Entity(name: "ship", team: defaultEnemyTeam, pronoun: Pronoun.SHE);
     storyline.add("<owner's> <subject> aim<s> <subject's> guns at <object>",
         owner: enemy, subject: ship, object: player);
     storyline.add("<owner's> <subject> <is> faster",
@@ -246,8 +248,8 @@ void main() {
     var storyline = new Storyline();
     var player = new Player("Filip");
     var gun = new Entity(name: "gun", team: playerTeam, pronoun: Pronoun.IT);
-    var enemy = new Entity(
-        name: "enemy", team: defaultEnemyTeam, pronoun: Pronoun.HE);
+    var enemy =
+        new Entity(name: "enemy", team: defaultEnemyTeam, pronoun: Pronoun.HE);
     storyline.add(
         "<owner's> <subject> <is> pointed at <object-owner's> "
         "<object>",
@@ -346,8 +348,7 @@ void main() {
         storyline.add("you aim at the sky",
             actionThread: threadA, isSupportiveActionInThread: true);
         storyline.add("<subject> <is> heard from the distance",
-            subject:
-                new Entity(name: "big bang", alreadyMentioned: false));
+            subject: new Entity(name: "big bang", alreadyMentioned: false));
         storyline.add("you shoot a duck", actionThread: threadA);
         expect(storyline.toString(), contains("aim at the sky"));
         expect(storyline.toString(), contains("shoot a duck"));

@@ -9,12 +9,13 @@ part of stranded.fight.fight_situation;
 
 class _$FightSituation extends FightSituation {
   final int time;
-  final BuiltList<Actor> playerTeam;
-  final BuiltList<Actor> enemyTeam;
-  _$FightSituation._({this.time, this.playerTeam, this.enemyTeam}) : super._() {
+  final BuiltList<int> playerTeamIds;
+  final BuiltList<int> enemyTeamIds;
+  _$FightSituation._({this.time, this.playerTeamIds, this.enemyTeamIds})
+      : super._() {
     if (time == null) throw new ArgumentError('null time');
-    if (playerTeam == null) throw new ArgumentError('null playerTeam');
-    if (enemyTeam == null) throw new ArgumentError('null enemyTeam');
+    if (playerTeamIds == null) throw new ArgumentError('null playerTeamIds');
+    if (enemyTeamIds == null) throw new ArgumentError('null enemyTeamIds');
   }
   factory _$FightSituation([updates(FightSituationBuilder b)]) =>
       (new FightSituationBuilder()..update(updates)).build();
@@ -25,19 +26,19 @@ class _$FightSituation extends FightSituation {
   bool operator ==(other) {
     if (other is! FightSituation) return false;
     return time == other.time &&
-        playerTeam == other.playerTeam &&
-        enemyTeam == other.enemyTeam;
+        playerTeamIds == other.playerTeamIds &&
+        enemyTeamIds == other.enemyTeamIds;
   }
 
   int get hashCode {
-    return hashObjects([time, playerTeam, enemyTeam]);
+    return hashObjects([time, playerTeamIds, enemyTeamIds]);
   }
 
   String toString() {
     return 'FightSituation {'
         'time=${time.toString()}\n'
-        'playerTeam=${playerTeam.toString()}\n'
-        'enemyTeam=${enemyTeam.toString()}\n'
+        'playerTeamIds=${playerTeamIds.toString()}\n'
+        'enemyTeamIds=${enemyTeamIds.toString()}\n'
         '}';
   }
 }
@@ -46,8 +47,8 @@ class _$FightSituationBuilder extends FightSituationBuilder {
   _$FightSituationBuilder() : super._();
   void replace(FightSituation other) {
     super.time = other.time;
-    super.playerTeam = other.playerTeam;
-    super.enemyTeam = other.enemyTeam;
+    super.playerTeamIds = other.playerTeamIds;
+    super.enemyTeamIds = other.enemyTeamIds;
   }
 
   void update(updates(FightSituationBuilder b)) {
@@ -56,9 +57,9 @@ class _$FightSituationBuilder extends FightSituationBuilder {
 
   FightSituation build() {
     if (time == null) throw new ArgumentError('null time');
-    if (playerTeam == null) throw new ArgumentError('null playerTeam');
-    if (enemyTeam == null) throw new ArgumentError('null enemyTeam');
+    if (playerTeamIds == null) throw new ArgumentError('null playerTeamIds');
+    if (enemyTeamIds == null) throw new ArgumentError('null enemyTeamIds');
     return new _$FightSituation._(
-        time: time, playerTeam: playerTeam, enemyTeam: enemyTeam);
+        time: time, playerTeamIds: playerTeamIds, enemyTeamIds: enemyTeamIds);
   }
 }

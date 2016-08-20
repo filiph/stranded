@@ -11,7 +11,8 @@ class _$Actor extends Actor {
   final bool alreadyMentioned;
   final List<String> categories;
   final Item currentWeapon;
-  final int health;
+  final Item shield;
+  final Pose pose;
   final int id;
   final int initiative;
   final bool isActive;
@@ -26,7 +27,8 @@ class _$Actor extends Actor {
       {this.alreadyMentioned,
       this.categories,
       this.currentWeapon,
-      this.health,
+      this.shield,
+      this.pose,
       this.id,
       this.initiative,
       this.isActive,
@@ -41,7 +43,7 @@ class _$Actor extends Actor {
     if (alreadyMentioned == null)
       throw new ArgumentError('null alreadyMentioned');
     if (categories == null) throw new ArgumentError('null categories');
-    if (health == null) throw new ArgumentError('null health');
+    if (pose == null) throw new ArgumentError('null pose');
     if (id == null) throw new ArgumentError('null id');
     if (initiative == null) throw new ArgumentError('null initiative');
     if (isActive == null) throw new ArgumentError('null isActive');
@@ -64,7 +66,8 @@ class _$Actor extends Actor {
     return alreadyMentioned == other.alreadyMentioned &&
         categories == other.categories &&
         currentWeapon == other.currentWeapon &&
-        health == other.health &&
+        shield == other.shield &&
+        pose == other.pose &&
         id == other.id &&
         initiative == other.initiative &&
         isActive == other.isActive &&
@@ -82,7 +85,8 @@ class _$Actor extends Actor {
       alreadyMentioned,
       categories,
       currentWeapon,
-      health,
+      shield,
+      pose,
       id,
       initiative,
       isActive,
@@ -101,7 +105,8 @@ class _$Actor extends Actor {
         'alreadyMentioned=${alreadyMentioned.toString()}\n'
         'categories=${categories.toString()}\n'
         'currentWeapon=${currentWeapon.toString()}\n'
-        'health=${health.toString()}\n'
+        'shield=${shield.toString()}\n'
+        'pose=${pose.toString()}\n'
         'id=${id.toString()}\n'
         'initiative=${initiative.toString()}\n'
         'isActive=${isActive.toString()}\n'
@@ -122,7 +127,8 @@ class _$ActorBuilder extends ActorBuilder {
     super.alreadyMentioned = other.alreadyMentioned;
     super.categories = other.categories;
     super.currentWeapon = other.currentWeapon;
-    super.health = other.health;
+    super.shield = other.shield;
+    super.pose = other.pose;
     super.id = other.id;
     super.initiative = other.initiative;
     super.isActive = other.isActive;
@@ -143,7 +149,7 @@ class _$ActorBuilder extends ActorBuilder {
     if (alreadyMentioned == null)
       throw new ArgumentError('null alreadyMentioned');
     if (categories == null) throw new ArgumentError('null categories');
-    if (health == null) throw new ArgumentError('null health');
+    if (pose == null) throw new ArgumentError('null pose');
     if (id == null) throw new ArgumentError('null id');
     if (initiative == null) throw new ArgumentError('null initiative');
     if (isActive == null) throw new ArgumentError('null isActive');
@@ -159,7 +165,8 @@ class _$ActorBuilder extends ActorBuilder {
         alreadyMentioned: alreadyMentioned,
         categories: categories,
         currentWeapon: currentWeapon,
-        health: health,
+        shield: shield,
+        pose: pose,
         id: id,
         initiative: initiative,
         isActive: isActive,

@@ -26,7 +26,9 @@ class PlanConsequence {
         cumulativeProbability = previous == null
             ? probability
             : probability * previous.cumulativeProbability,
-        probability = probability;
+        probability = probability {
+    storyline.time = world.time;
+  }
 
   PlanConsequence.initial(WorldState world)
       : this(world, null, null, new Storyline(), 1.0, isInitial: true);

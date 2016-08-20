@@ -145,6 +145,7 @@ class ActorPlanner {
           score, current.cumulativeProbability, current.order);
 
       for (ActorAction action in actions) {
+        if (current.world.situations.isEmpty) continue;
         if (!action.isApplicable(currentActor, current.world)) continue;
         var consequences = action.apply(currentActor, current, current.world);
         for (PlanConsequence next in consequences) {

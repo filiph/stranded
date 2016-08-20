@@ -60,7 +60,8 @@ class Entity extends Object with EntityBehavior {
 
   final Pronoun pronoun;
 
-  Entity({this.name,
+  Entity(
+      {this.name,
       this.pronoun: Pronoun.IT,
       Team team,
       this.isPlayer: false,
@@ -95,8 +96,13 @@ abstract class EntityBehavior {
     return team != other.team;
   }
 
-  void report(Storyline storyline, String text, {Entity object}) {
-    storyline.add(text, subject: this as Entity, object: object);
+  void report(Storyline storyline, String text,
+      {Entity object, bool positive: false, bool negative: false}) {
+    storyline.add(text,
+        subject: this as Entity,
+        object: object,
+        positive: positive,
+        negative: negative);
   }
 }
 

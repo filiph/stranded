@@ -31,10 +31,10 @@ abstract class DashSituation extends SituationState
       <ActionGenerator>[dodgeDash];
 
   @override
-  Actor getActorAtTime(int i) {
-    if (i == 0) return target;
+  Actor getActorAtTime(int time, _) {
+    if (time == 0) return target;
     throw new RangeError.range(
-        i, 0, 0, "Only the target has a turn during a dash");
+        time, 0, 0, "Only the target has a turn during a dash");
   }
 
   @override

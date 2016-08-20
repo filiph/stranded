@@ -27,7 +27,10 @@ abstract class Actor extends Object
   @nullable
   Item get currentWeapon;
 
-  int get health;
+  @nullable
+  Item get shield;
+
+  Pose get pose;
 
   /// Names can change or can even be duplicate. [id] is the only safe way
   /// to find out if we're talking about the same actor.
@@ -206,13 +209,13 @@ abstract class Actor extends Object
 }
 
 abstract class ActorBuilder implements Builder<Actor, ActorBuilder> {
-  //alreadyMentioned, categories, currentWeapon, health,  isPlayer, items, name, nameIsProperNoun, pronoun, team
-
   bool alreadyMentioned = true;
   List<String> categories = <String>[];
   @nullable
   Item currentWeapon;
-  int health = 100;
+  @nullable
+  Item shield;
+  Pose pose = Pose.standing;
   int id;
   int initiative = 100;
   bool isActive = true;
@@ -294,3 +297,7 @@ class ActorMap<T> extends CanonicalizedMap<int, Actor, T> {
 //    return map;
 //  }
 //}
+
+enum Pose {
+  standing, falling, onGround
+}

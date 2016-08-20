@@ -172,9 +172,7 @@ class Storyline {
       return;
     }
 
-    if (time != null) {
-      this.time = time;
-    }
+    time ??= this.time;
 
     if ((str.endsWith(".") || str.endsWith("!") || str.endsWith("?")) &&
         str.startsWith(new RegExp("[A-Z]"))) {
@@ -200,9 +198,11 @@ class Storyline {
   /// Appends [other] storyline to this one.
   void concatenate(Storyline other) {
     if (strBuf.isNotEmpty) {
-      throw new StateError("Please only concatenate to clean storylines "
+      // TODO: throw new StateError (after we rename .toString to something else)
+      print("Please only concatenate to clean storylines "
           "(do not try to do this when some of the storyline is already "
           "being outputted).");
+      strBuf.clear();
     }
     reports.addAll(other.reports);
   }
@@ -688,8 +688,8 @@ class Storyline {
         } else {
           // let's try and glue [i-1] and [i] into one sentence
           if (but) {
-            strBuf
-                .write(Randomly.choose([" but ", " but ", " yet ", ", but "]));
+            strBuf.write(
+                Randomly.choose([" but ", " but ", /*" yet ",*/ ", but " ]));
             if (!sameSentiment(i, i + 1)) endThisSentence = true;
           } else {
             if (same('subject', i, i - 1) &&

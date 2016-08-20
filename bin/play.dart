@@ -15,6 +15,7 @@ import 'package:stranded/storyline/storyline.dart';
 import 'src/situations/fight/fight_situation.dart';
 import 'src/situations/fight/dash.dart';
 import 'src/situations/fight/dodge_dash.dart';
+import 'package:stranded/storyline/randomly.dart';
 
 main() {
   var filip = new Actor((b) => b
@@ -44,8 +45,8 @@ main() {
     ..team = defaultEnemyTeam);
 
   var initialSituation = new Situation.withState(new FightSituation((b) => b
-    ..playerTeam = new BuiltList<Actor>([filip, sedgwick, brant])
-    ..enemyTeam = new BuiltList<Actor>([goon])));
+    ..playerTeamIds = new BuiltList<int>([filip.id, sedgwick.id, brant.id])
+    ..enemyTeamIds = new BuiltList<int>([goon.id])));
 
   WorldState world = new WorldState(
       new Set.from([filip, sedgwick, brant, goon]), initialSituation);
@@ -63,7 +64,7 @@ main() {
 
   while (world.situations.isNotEmpty) {
     var situation = world.currentSituation;
-    var actor = situation.state.currentActor;
+    var actor = situation.state.getCurrentActor(world);
 
     List<ActorAction> availableActions;
     if (situation.actionBuilderWhitelist != null) {
@@ -79,10 +80,11 @@ main() {
       }
     }
 
-    availableActions
-        .removeWhere((action) => !action.isApplicable(actor, world));
+    List<ActorAction> applicableActions = availableActions
+        .where((action) => action.isApplicable(actor, world))
+        .toList();
 
-    var planner = new ActorPlanner(actor, world, availableActions);
+    var planner = new ActorPlanner(actor, world, applicableActions);
 //    print("Planning for ${actor.name}");
     planner.plan();
 
@@ -99,9 +101,12 @@ main() {
       selected = planner.getBest();
     }
 //    print("${actor.name} selects $selected");
-    var consequences = selected.apply(actor, consequence, world).toSet();
-    consequence = consequences.first; // TODO: Actually pick by random.
+    var consequences = selected.apply(actor, consequence, world).toList();
+    int index = Randomly
+        .chooseWeighted(consequences.map/*<num>*/((c) => c.probability));
+    consequence = consequences[index];
     storyline.concatenate(consequence.storyline);
     world = consequence.world;
   }
+  print(storyline.toString());
 }
