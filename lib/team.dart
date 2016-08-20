@@ -15,8 +15,9 @@ abstract class Team implements Built<Team, TeamBuilder> {
   bool isEnemyWith(Team other) => id != other.id;
 }
 
-final Team playerTeam = new Team((b) => b.id = 0);
-final Team defaultEnemyTeam = new Team((b) => b.id = 1);
+final Team neutralTeam = new Team((b) => b.id = 0);
+final Team playerTeam = new Team((b) => b.id = 1);
+final Team defaultEnemyTeam = new Team((b) => b.id = 2);
 
 abstract class TeamBuilder implements Builder<Team, TeamBuilder> {
   int id;

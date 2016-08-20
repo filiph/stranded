@@ -6,11 +6,17 @@ import 'package:stranded/actor.dart';
 import 'package:stranded/world.dart';
 import 'package:stranded/plan_consequence.dart';
 import 'package:stranded/action_record.dart';
-
-// XXX ACTION GENERATORS THAT YIELD DIFFERENT ACTIONS (different targets, mostly) - EAT action generates Eat<Fish>, Eat<Grass> etc.
-// Maybe: Actions types - withOthers ("when the evening's at end"), without ("meanwhile"), elsewhere ("")
+import 'package:stranded/storyline/storyline.dart';
 
 typedef String _ActorActionFunction(Actor actor, WorldState world);
+
+///
+class Consequence {
+  num weight;
+  ActorActionFunction applyFunction;
+}
+
+typedef void ActorActionFunction(Actor actor, WorldState worldCopy, Storyline story);
 
 abstract class ActorAction {
   String _description;
