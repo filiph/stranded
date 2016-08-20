@@ -154,12 +154,11 @@ class EnemyTargetActionGenerator extends ActionGenerator {
 
   @override
   Iterable<ActorAction> build(Actor actor, WorldState world) {
-    var situationActors = world.currentSituation.state
-        .getActors(world.actors);
-    var enemies = situationActors
-        .where((other) => other.team.isEnemyWith(actor.team));
+    var situationActors = world.currentSituation.state.getActors(world.actors);
+    var enemies =
+        situationActors.where((other) => other.team.isEnemyWith(actor.team));
     return enemies.map/*<ActorAction>*/((Actor enemy) => new EnemyTargetAction(
-        name,
+        (new Storyline()..add(name, object: enemy)).toString(),
         enemy: enemy,
         valid: valid,
         success: success,
@@ -204,7 +203,7 @@ class EnemyTargetAction extends ActorAction {
   bool isApplicable(Actor actor, WorldState world) =>
       valid(actor, enemy, world);
 
-  String toString() => "EnemyTargetAction<$name>";
+  String toString() => name;
 }
 
 typedef bool EnemyTargetApplicabilityFunction(

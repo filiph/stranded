@@ -34,10 +34,12 @@ abstract class FightSituation extends SituationState
   Actor getActorAtTime(int i, WorldState world) {
     // TODO: add _lastActor and use that to offset [i] if needed (when one of
     //       the actors is removed during the fight.
-    var allActorIds =
-        alternate/*<int>*/(playerTeamIds, enemyTeamIds).toList(growable: false);
-    i = i % allActorIds.length;
-    return world.getActorById(allActorIds[i]);
+    var allActorIds = alternate/*<int>*/(playerTeamIds, enemyTeamIds);
+    var activeActorsIds = allActorIds
+        .where((id) => world.getActorById(id).isAliveAndActive)
+        .toList(growable: false);
+    i = i % activeActorsIds.length;
+    return world.getActorById(activeActorsIds[i]);
   }
 
   @override

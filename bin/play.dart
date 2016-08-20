@@ -16,6 +16,7 @@ import 'src/situations/fight/fight_situation.dart';
 import 'src/situations/fight/slash.dart';
 import 'src/situations/fight/dodge_slash.dart';
 import 'package:stranded/storyline/randomly.dart';
+import 'src/situations/fight/parry_slash.dart';
 
 main() {
   var filip = new Actor((b) => b
@@ -25,10 +26,10 @@ main() {
     ..name = "Filip"
     ..currentWeapon = new Sword()
     ..initiative = 1000);
-  var sedgwick = new Actor((b) => b
+  var grace = new Actor((b) => b
     ..id = 100
-    ..pronoun = Pronoun.HE
-    ..name = "Sedgwick"
+    ..pronoun = Pronoun.SHE
+    ..name = "Grace"
     ..currentWeapon = new Sword());
   var brant = new Actor((b) => b
     ..id = 500
@@ -36,26 +37,35 @@ main() {
     ..name = "Brant"
     ..currentWeapon = new Sword());
 
-  var goon = new Actor((b) => b
+  var orc = new Actor((b) => b
     ..id = 1000
-    ..name = "goon"
+    ..name = "orc"
+    ..nameIsProperNoun = false
+    ..pronoun = Pronoun.HE
+    ..currentWeapon = new Sword()
+    ..team = defaultEnemyTeam);
+
+  var goblin = new Actor((b) => b
+    ..id = 1001
+    ..name = "goblin"
     ..nameIsProperNoun = false
     ..pronoun = Pronoun.HE
     ..currentWeapon = new Sword()
     ..team = defaultEnemyTeam);
 
   var initialSituation = new Situation.withState(new FightSituation((b) => b
-    ..playerTeamIds = new BuiltList<int>([filip.id, sedgwick.id, brant.id])
-    ..enemyTeamIds = new BuiltList<int>([goon.id])));
+    ..playerTeamIds = new BuiltList<int>([filip.id, grace.id, brant.id])
+    ..enemyTeamIds = new BuiltList<int>([orc.id, goblin.id])));
 
   WorldState world = new WorldState(
-      new Set.from([filip, sedgwick, brant, goon]), initialSituation);
+      new Set.from([filip, grace, brant, orc, goblin]), initialSituation);
 
   Set<ActorAction> actions = new Set<ActorAction>();
 
   Set<ActionGenerator> actionBuilders = new Set<ActionGenerator>();
   actionBuilders.add(slashWithSword);
   actionBuilders.add(dodgeSlash);
+  actionBuilders.add(parrySlash);
 
 //  world.validate();
 

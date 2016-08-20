@@ -7,6 +7,7 @@ import 'package:stranded/actor.dart';
 import 'package:quiver/core.dart';
 import 'package:stranded/action.dart';
 import 'dodge_slash.dart';
+import 'parry_slash.dart';
 
 part 'slash_situation.g.dart';
 
@@ -28,7 +29,7 @@ abstract class SlashSituation extends SituationState
 
   @override
   List<ActionGenerator> get actionBuilderWhitelist =>
-      <ActionGenerator>[dodgeSlash];
+      <ActionGenerator>[dodgeSlash, parrySlash];
 
   @override
   Actor getActorAtTime(int time, _) {

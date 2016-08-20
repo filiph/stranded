@@ -6,16 +6,16 @@ import 'package:stranded/storyline/storyline.dart';
 
 import 'slash_situation.dart';
 
-var dodgeSlash = new EnemyTargetActionGenerator("dodge it",
+var parrySlash = new EnemyTargetActionGenerator("parry it",
     valid: (Actor a, enemy, WorldState w) =>
-        w.currentSituation.state is SlashSituation,
-    chance: 0.5, success: (a, enemy, WorldState w, Storyline s) {
-  a.report(s, "<subject> dodge<s> it", object: enemy, positive: true);
+        w.currentSituation.state is SlashSituation && a.wields(ItemType.SWORD),
+    chance: 0.6, success: (a, enemy, WorldState w, Storyline s) {
+  a.report(s, "<subject> {parr<ies> it|meet<s> it with <subject's> sword}",
+      object: enemy, positive: true);
   w.popSituation();
-  return "$a dodges $enemy";
+  return "$a parries $enemy";
 }, failure: (Actor a, Actor enemy, WorldState w, Storyline s) {
-  //print("$a tr<ies> to dodge but $enemy slashes him");
-  a.report(s, "<subject> tr<ies> to dodge");
+  a.report(s, "<subject> tr<ies> to {parry|meet it with <subject's> sword}");
   enemy.report(s, "<subject> slash<es> <object>",
       object: a, but: true, positive: true);
   a.report(s, "<subject> fall<s> to the ground", negative: true);
