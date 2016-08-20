@@ -10,13 +10,13 @@ import 'package:stranded/storyline/storyline.dart';
 
 typedef String _ActorActionFunction(Actor actor, WorldState world);
 
-///
-class Consequence {
-  num weight;
-  ActorActionFunction applyFunction;
-}
-
-typedef void ActorActionFunction(Actor actor, WorldState worldCopy, Storyline story);
+// TODO: use this to have more than 2 outcomes
+//class Consequence {
+//  num weight;
+//  ActorActionFunction applyFunction;
+//}
+//
+//typedef void ActorActionFunction(Actor actor, WorldState worldCopy, Storyline story);
 
 abstract class ActorAction {
   String _description;
