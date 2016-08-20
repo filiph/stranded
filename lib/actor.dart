@@ -3,51 +3,49 @@ library stranded.actor;
 import 'package:built_value/built_value.dart';
 import 'package:collection/collection.dart';
 import 'package:quiver/core.dart';
-
-import 'package:stranded/world.dart';
 import 'package:stranded/action_record.dart';
 import 'package:stranded/item.dart';
-import 'package:stranded/team.dart';
 import 'package:stranded/storyline/storyline.dart';
+import 'package:stranded/team.dart';
+import 'package:stranded/world.dart';
 
 part 'actor.g.dart';
-
-class ActorMap<T> extends CanonicalizedMap<int, Actor, T> {
-  ActorMap() : super((Actor key) => key.id, isValidKey: (key) => key != null);
-
-  factory ActorMap.from(ActorMap other) {
-    var map = new ActorMap<T>();
-    other.forEach((Actor key, T value) => map[key] = value);
-    return map;
-  }
-
-  @override
-  int get hashCode {
-    return hashObjects(values.toList(growable: false));
-  }
-
-  bool operator ==(o) => o is ActorMap && hashCode == o.hashCode;
-}
-
-class ActorRelationshipMap extends ActorMap<Scale> {
-  ActorRelationshipMap();
-
-  factory ActorRelationshipMap.duplicate(ActorRelationshipMap other) {
-    var map = new ActorRelationshipMap();
-    other.forEach((Actor key, Scale value) => map[key] = new Scale.from(value));
-    return map;
-  }
-}
 
 abstract class Actor extends Object
     with EntityBehavior
     implements Built<Actor, ActorBuilder>, Entity {
+  factory Actor([updates(ActorBuilder b)]) = _$Actor;
+  Actor._();
+
+  bool get alreadyMentioned;
+
+  List<String> get categories; // TODO make immutable
+
+  /// The weapon this actor is wielding at the moment.
+  ///
+  /// Changing a weapon should ordinarily take a turn.
+  @nullable
+  Item get currentWeapon;
+
+  int get health;
+
   /// Names can change or can even be duplicate. [id] is the only safe way
   /// to find out if we're talking about the same actor.
   int get id;
-  String get name;
 
-  Team get team;
+  /// The higher the initiative, the sooner this actor will act each turn.
+  ///
+  /// The player should have the highest initiative (so that he starts). The
+  /// island should probably have the lowest.
+  ///
+  /// This doesn't change during gameplay.
+  int get initiative;
+
+  bool get isActive;
+
+  bool get isAlive;
+
+  bool get isPlayer;
 
   /// How safe does [this] Actor feel in the presence of the different other
   /// actors.
@@ -59,46 +57,75 @@ abstract class Actor extends Object
   // TODO: for 'Skyrim', we don't need this most of the time (simple friend or foe suffices) -- maybe create PsychologicalActor?
 //  ActorRelationshipMap get safetyFear;
 
-  Set<Item> get items; // TODO make immutable
+  Set<Item> get items;
 
-  /// The weapon this actor is wielding at the moment.
-  ///
-  /// Changing a weapon should ordinarily take a turn.
-  @nullable
-  Item get currentWeapon;
-
-  bool wields(ItemType value) =>
-      currentWeapon != null && currentWeapon.type == value;
-
-  int get health;
-
-  bool get alreadyMentioned;
-
-  bool get isActive;
-
-  Pronoun get pronoun;
-
-  List<String> get categories;
-
-  bool get isAlive;
-
-  bool get isPlayer;
+  String get name;
 
   bool get nameIsProperNoun;
 
-  /// The higher the initiative, the sooner this actor will act each turn.
-  ///
-  /// The player should have the highest initiative (so that he starts). The
-  /// island should probably have the lowest.
-  ///
-  /// This doesn't change during gameplay.
-  int get initiative;
+  Pronoun get pronoun;
 
-  Actor._();
-  factory Actor([updates(ActorBuilder b)]) = _$Actor;
+  Team get team;
+  /// Computes gratitude towards [other] given the state of the [world].
+  ///
+  /// Goes through action records.
+  num getGratitude(Actor other, WorldState world) {
+    var othersActions = world.actionRecords.where(
+        (rec) => rec.knownTo.contains(id) && rec.protagonist == other.id);
+
+    var scoreChanges = othersActions
+        .map((rec) => rec.scoreChange[this])
+        .where((value) => value != null);
+    num cumulativeScoreChange = scoreChanges.fold(0, (a, b) => a + b);
+    return cumulativeScoreChange;
+  }
 
   // TODO: loveIndifference
   // other feelings?
+
+  bool hasItem(Type type, {int count: 1}) {
+    for (var item in items) {
+      if (item.runtimeType == type) {
+        count -= 1;
+      }
+      if (count <= 0) break;
+    }
+    return count <= 0;
+  }
+
+  Item removeItem(Type type) {
+    Item markedForRemoval;
+    for (var item in items) {
+      if (item.runtimeType == type) {
+        markedForRemoval = item;
+        break;
+      }
+    }
+    if (markedForRemoval == null) {
+      throw new StateError("Cannot remove item: actor $this doesn't have "
+          "$type");
+    }
+    items.remove(markedForRemoval);
+    return markedForRemoval;
+  }
+
+  Iterable<Item> removeItems(Type type, int count) {
+    var markedForRemoval = <Item>[];
+    int remaining = count;
+    for (var item in items) {
+      if (item.runtimeType == type) {
+        markedForRemoval.add(item);
+      }
+      remaining -= 1;
+      if (remaining <= 0) break;
+    }
+    if (remaining != 0) {
+      throw new StateError("Cannot remove $count items of $type from $this. "
+          "Only ${count - remaining} in possession.");
+    }
+    markedForRemoval.forEach((item) => items.remove(item));
+    return markedForRemoval;
+  }
 
   /// The resources this actor knows about.
   ///
@@ -174,122 +201,96 @@ abstract class Actor extends Object
     return /*safety + */ gratitude + luxurySum;
   }
 
-  /// Computes gratitude towards [other] given the state of the [world].
-  ///
-  /// Goes through action records.
-  num getGratitude(Actor other, WorldState world) {
-    var othersActions = world.actionRecords.where(
-        (rec) => rec.knownTo.contains(id) && rec.protagonist == other.id);
-
-    var scoreChanges = othersActions
-        .map((rec) => rec.scoreChange[this])
-        .where((value) => value != null);
-    num cumulativeScoreChange = scoreChanges.fold(0, (a, b) => a + b);
-    return cumulativeScoreChange;
-  }
-
-  Item removeItem(Type type) {
-    Item markedForRemoval;
-    for (var item in items) {
-      if (item.runtimeType == type) {
-        markedForRemoval = item;
-        break;
-      }
-    }
-    if (markedForRemoval == null) {
-      throw new StateError("Cannot remove item: actor $this doesn't have "
-          "$type");
-    }
-    items.remove(markedForRemoval);
-    return markedForRemoval;
-  }
-
-  Iterable<Item> removeItems(Type type, int count) {
-    var markedForRemoval = <Item>[];
-    int remaining = count;
-    for (var item in items) {
-      if (item.runtimeType == type) {
-        markedForRemoval.add(item);
-      }
-      remaining -= 1;
-      if (remaining <= 0) break;
-    }
-    if (remaining != 0) {
-      throw new StateError("Cannot remove $count items of $type from $this. "
-          "Only ${count - remaining} in possession.");
-    }
-    markedForRemoval.forEach((item) => items.remove(item));
-    return markedForRemoval;
-  }
-
-  bool hasItem(Type type, {int count: 1}) {
-    for (var item in items) {
-      if (item.runtimeType == type) {
-        count -= 1;
-      }
-      if (count <= 0) break;
-    }
-    return count <= 0;
-  }
-}
-
-class Scale implements Comparable<Scale> {
-  static const num upperBound = 1;
-  static const num lowerBound = -1;
-
-  /// The actual value of the scale.
-  num get value => _value;
-  num _value;
-
-  Scale(this._value) {
-    assert(value >= lowerBound && value <= upperBound);
-  }
-
-  Scale.from(Scale other) : this(other.value);
-
-  @override
-  int get hashCode => (value * 100000000).hashCode;
-
-  bool operator ==(o) => o is Scale && _value == o.value;
-
-  void decrease(num change) {
-    _value = lowerBound + (_value - lowerBound) * (1 - change);
-  }
-
-  /// Changes the scale so that its [change] percent closer to `1.0`.
-  ///
-  /// So if [value] is `0` and we call `increase(0.5)`, we get Scale(0.5). If
-  /// [value] is `0.5` and we again call `increase(0.5)`, then we get
-  /// Scale(0.75).
-  void increase(num change) {
-    _value = _value + (upperBound - _value) * change;
-  }
-
-  String toString() => "Scale($value)";
-
-  @override
-  int compareTo(Scale other) => value.compareTo(other.value);
+  bool wields(ItemType value) =>
+      currentWeapon != null && currentWeapon.type == value;
 }
 
 abstract class ActorBuilder implements Builder<Actor, ActorBuilder> {
-  int id;
-  String name;
-  Team team = playerTeam;
-//  ActorRelationshipMap safetyFear;
-  Set<Item> items = new Set();
+  //alreadyMentioned, categories, currentWeapon, health,  isPlayer, items, name, nameIsProperNoun, pronoun, team
+
+  bool alreadyMentioned = true;
+  List<String> categories = <String>[];
   @nullable
   Item currentWeapon;
   int health = 100;
-  bool alreadyMentioned = true;
+  int id;
+  int initiative = 100;
   bool isActive = true;
-  Pronoun pronoun = Pronoun.IT;
-  List<String> categories = <String>[];
   bool isAlive = true;
   bool isPlayer = false;
+  Set<Item> items = new Set();
+  String name;
   bool nameIsProperNoun = false;
-  int initiative = 100;
+  Pronoun pronoun = Pronoun.IT;
+  Team team = playerTeam;
+//  ActorRelationshipMap safetyFear;
 
-  ActorBuilder._();
   factory ActorBuilder() = _$ActorBuilder;
+  ActorBuilder._();
 
 }
+
+class ActorMap<T> extends CanonicalizedMap<int, Actor, T> {
+  ActorMap() : super((Actor key) => key.id, isValidKey: (key) => key != null);
+
+  factory ActorMap.from(ActorMap other) {
+    var map = new ActorMap<T>();
+    other.forEach((Actor key, T value) => map[key] = value);
+    return map;
+  }
+
+  @override
+  int get hashCode {
+    return hashObjects(values.toList(growable: false));
+  }
+
+  bool operator ==(o) => o is ActorMap && hashCode == o.hashCode;
+}
+
+//class Scale implements Comparable<Scale> {
+//  static const num upperBound = 1;
+//  static const num lowerBound = -1;
+//
+//  /// The actual value of the scale.
+//  num get value => _value;
+//  num _value;
+//
+//  Scale(this._value) {
+//    assert(value >= lowerBound && value <= upperBound);
+//  }
+//
+//  Scale.from(Scale other) : this(other.value);
+//
+//  @override
+//  int get hashCode => (value * 100000000).hashCode;
+//
+//  bool operator ==(o) => o is Scale && _value == o.value;
+//
+//  void decrease(num change) {
+//    _value = lowerBound + (_value - lowerBound) * (1 - change);
+//  }
+//
+//  /// Changes the scale so that its [change] percent closer to `1.0`.
+//  ///
+//  /// So if [value] is `0` and we call `increase(0.5)`, we get Scale(0.5). If
+//  /// [value] is `0.5` and we again call `increase(0.5)`, then we get
+//  /// Scale(0.75).
+//  void increase(num change) {
+//    _value = _value + (upperBound - _value) * change;
+//  }
+//
+//  String toString() => "Scale($value)";
+//
+//  @override
+//  int compareTo(Scale other) => value.compareTo(other.value);
+//}
+
+//class ActorRelationshipMap extends ActorMap<Scale> {
+//  ActorRelationshipMap();
+//
+//  factory ActorRelationshipMap.duplicate(ActorRelationshipMap other) {
+//    var map = new ActorRelationshipMap();
+//    other.forEach((Actor key, Scale value) => map[key] = new Scale.from(value));
+//    return map;
+//  }
+//}

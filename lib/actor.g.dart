@@ -8,51 +8,51 @@ part of stranded.actor;
 // **************************************************************************
 
 class _$Actor extends Actor {
-  final int id;
-  final String name;
-  final Team team;
-  final Set<Item> items;
+  final bool alreadyMentioned;
+  final List<String> categories;
   final Item currentWeapon;
   final int health;
-  final bool alreadyMentioned;
+  final int id;
+  final int initiative;
   final bool isActive;
-  final Pronoun pronoun;
-  final List<String> categories;
   final bool isAlive;
   final bool isPlayer;
+  final Set<Item> items;
+  final String name;
   final bool nameIsProperNoun;
-  final int initiative;
+  final Pronoun pronoun;
+  final Team team;
   _$Actor._(
-      {this.id,
-      this.name,
-      this.team,
-      this.items,
+      {this.alreadyMentioned,
+      this.categories,
       this.currentWeapon,
       this.health,
-      this.alreadyMentioned,
+      this.id,
+      this.initiative,
       this.isActive,
-      this.pronoun,
-      this.categories,
       this.isAlive,
       this.isPlayer,
+      this.items,
+      this.name,
       this.nameIsProperNoun,
-      this.initiative})
+      this.pronoun,
+      this.team})
       : super._() {
-    if (id == null) throw new ArgumentError('null id');
-    if (name == null) throw new ArgumentError('null name');
-    if (team == null) throw new ArgumentError('null team');
-    if (items == null) throw new ArgumentError('null items');
-    if (health == null) throw new ArgumentError('null health');
     if (alreadyMentioned == null)
       throw new ArgumentError('null alreadyMentioned');
-    if (isActive == null) throw new ArgumentError('null isActive');
-    if (pronoun == null) throw new ArgumentError('null pronoun');
     if (categories == null) throw new ArgumentError('null categories');
+    if (health == null) throw new ArgumentError('null health');
+    if (id == null) throw new ArgumentError('null id');
+    if (initiative == null) throw new ArgumentError('null initiative');
+    if (isActive == null) throw new ArgumentError('null isActive');
     if (isAlive == null) throw new ArgumentError('null isAlive');
     if (isPlayer == null) throw new ArgumentError('null isPlayer');
+    if (items == null) throw new ArgumentError('null items');
+    if (name == null) throw new ArgumentError('null name');
     if (nameIsProperNoun == null)
       throw new ArgumentError('null nameIsProperNoun');
-    if (initiative == null) throw new ArgumentError('null initiative');
+    if (pronoun == null) throw new ArgumentError('null pronoun');
+    if (team == null) throw new ArgumentError('null team');
   }
   factory _$Actor([updates(ActorBuilder b)]) =>
       (new ActorBuilder()..update(updates)).build();
@@ -61,57 +61,57 @@ class _$Actor extends Actor {
   _$ActorBuilder toBuilder() => new _$ActorBuilder()..replace(this);
   bool operator ==(other) {
     if (other is! Actor) return false;
-    return id == other.id &&
-        name == other.name &&
-        team == other.team &&
-        items == other.items &&
+    return alreadyMentioned == other.alreadyMentioned &&
+        categories == other.categories &&
         currentWeapon == other.currentWeapon &&
         health == other.health &&
-        alreadyMentioned == other.alreadyMentioned &&
+        id == other.id &&
+        initiative == other.initiative &&
         isActive == other.isActive &&
-        pronoun == other.pronoun &&
-        categories == other.categories &&
         isAlive == other.isAlive &&
         isPlayer == other.isPlayer &&
+        items == other.items &&
+        name == other.name &&
         nameIsProperNoun == other.nameIsProperNoun &&
-        initiative == other.initiative;
+        pronoun == other.pronoun &&
+        team == other.team;
   }
 
   int get hashCode {
     return hashObjects([
-      id,
-      name,
-      team,
-      items,
+      alreadyMentioned,
+      categories,
       currentWeapon,
       health,
-      alreadyMentioned,
+      id,
+      initiative,
       isActive,
-      pronoun,
-      categories,
       isAlive,
       isPlayer,
+      items,
+      name,
       nameIsProperNoun,
-      initiative
+      pronoun,
+      team
     ]);
   }
 
   String toString() {
     return 'Actor {'
-        'id=${id.toString()}\n'
-        'name=${name.toString()}\n'
-        'team=${team.toString()}\n'
-        'items=${items.toString()}\n'
+        'alreadyMentioned=${alreadyMentioned.toString()}\n'
+        'categories=${categories.toString()}\n'
         'currentWeapon=${currentWeapon.toString()}\n'
         'health=${health.toString()}\n'
-        'alreadyMentioned=${alreadyMentioned.toString()}\n'
+        'id=${id.toString()}\n'
+        'initiative=${initiative.toString()}\n'
         'isActive=${isActive.toString()}\n'
-        'pronoun=${pronoun.toString()}\n'
-        'categories=${categories.toString()}\n'
         'isAlive=${isAlive.toString()}\n'
         'isPlayer=${isPlayer.toString()}\n'
+        'items=${items.toString()}\n'
+        'name=${name.toString()}\n'
         'nameIsProperNoun=${nameIsProperNoun.toString()}\n'
-        'initiative=${initiative.toString()}\n'
+        'pronoun=${pronoun.toString()}\n'
+        'team=${team.toString()}\n'
         '}';
   }
 }
@@ -119,20 +119,20 @@ class _$Actor extends Actor {
 class _$ActorBuilder extends ActorBuilder {
   _$ActorBuilder() : super._();
   void replace(Actor other) {
-    super.id = other.id;
-    super.name = other.name;
-    super.team = other.team;
-    super.items = other.items;
+    super.alreadyMentioned = other.alreadyMentioned;
+    super.categories = other.categories;
     super.currentWeapon = other.currentWeapon;
     super.health = other.health;
-    super.alreadyMentioned = other.alreadyMentioned;
+    super.id = other.id;
+    super.initiative = other.initiative;
     super.isActive = other.isActive;
-    super.pronoun = other.pronoun;
-    super.categories = other.categories;
     super.isAlive = other.isAlive;
     super.isPlayer = other.isPlayer;
+    super.items = other.items;
+    super.name = other.name;
     super.nameIsProperNoun = other.nameIsProperNoun;
-    super.initiative = other.initiative;
+    super.pronoun = other.pronoun;
+    super.team = other.team;
   }
 
   void update(updates(ActorBuilder b)) {
@@ -140,35 +140,35 @@ class _$ActorBuilder extends ActorBuilder {
   }
 
   Actor build() {
-    if (id == null) throw new ArgumentError('null id');
-    if (name == null) throw new ArgumentError('null name');
-    if (team == null) throw new ArgumentError('null team');
-    if (items == null) throw new ArgumentError('null items');
-    if (health == null) throw new ArgumentError('null health');
     if (alreadyMentioned == null)
       throw new ArgumentError('null alreadyMentioned');
-    if (isActive == null) throw new ArgumentError('null isActive');
-    if (pronoun == null) throw new ArgumentError('null pronoun');
     if (categories == null) throw new ArgumentError('null categories');
+    if (health == null) throw new ArgumentError('null health');
+    if (id == null) throw new ArgumentError('null id');
+    if (initiative == null) throw new ArgumentError('null initiative');
+    if (isActive == null) throw new ArgumentError('null isActive');
     if (isAlive == null) throw new ArgumentError('null isAlive');
     if (isPlayer == null) throw new ArgumentError('null isPlayer');
+    if (items == null) throw new ArgumentError('null items');
+    if (name == null) throw new ArgumentError('null name');
     if (nameIsProperNoun == null)
       throw new ArgumentError('null nameIsProperNoun');
-    if (initiative == null) throw new ArgumentError('null initiative');
+    if (pronoun == null) throw new ArgumentError('null pronoun');
+    if (team == null) throw new ArgumentError('null team');
     return new _$Actor._(
-        id: id,
-        name: name,
-        team: team,
-        items: items,
+        alreadyMentioned: alreadyMentioned,
+        categories: categories,
         currentWeapon: currentWeapon,
         health: health,
-        alreadyMentioned: alreadyMentioned,
+        id: id,
+        initiative: initiative,
         isActive: isActive,
-        pronoun: pronoun,
-        categories: categories,
         isAlive: isAlive,
         isPlayer: isPlayer,
+        items: items,
+        name: name,
         nameIsProperNoun: nameIsProperNoun,
-        initiative: initiative);
+        pronoun: pronoun,
+        team: team);
   }
 }
