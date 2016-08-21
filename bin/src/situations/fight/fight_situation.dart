@@ -43,7 +43,7 @@ abstract class FightSituation extends SituationState
   }
 
   @override
-  Iterable<Actor> getActors(Iterable<Actor> actors) => actors.where(
+  Iterable<Actor> getActors(Iterable<Actor> actors, _) => actors.where(
       (Actor actor) =>
           actor.isAliveAndActive &&
           (playerTeamIds.contains(actor.id) ||

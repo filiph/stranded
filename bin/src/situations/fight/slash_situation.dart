@@ -15,7 +15,7 @@ abstract class SlashSituation extends SituationState
     with ElapsingTime<SlashSituation, SlashSituationBuilder>
     implements Built<SlashSituation, SlashSituationBuilder> {
   int get time;
-  Actor get attacker;
+  Actor get attacker; // TODO: use id instead
   Actor get target;
 
   SlashSituation._();
@@ -34,12 +34,11 @@ abstract class SlashSituation extends SituationState
   @override
   Actor getActorAtTime(int time, _) {
     if (time == 0) return target;
-    throw new RangeError.range(
-        time, 0, 0, "Only the target has a turn during a slash");
+    return null;
   }
 
   @override
-  Iterable<Actor> getActors(Iterable<Actor> actors) =>
+  Iterable<Actor> getActors(Iterable<Actor> actors, _) =>
       actors.where((actor) => actor == attacker || actor == target);
 }
 

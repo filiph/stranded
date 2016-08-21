@@ -27,21 +27,10 @@ abstract class ActorAction {
     var successChance = getSuccessChance(actor, current.world);
     assert(successChance != null);
 
-    // TODO: DRY + more than two outcomes (use Randomly.chooseWeighted)
     if (successChance > 0) {
       var worldCopy = new WorldState.duplicate(world);
-      var actorInWorldCopy =
-          worldCopy.actors.singleWhere((a) => a.id == actor.id);
-      var builder = _prepareWorldRecord(actor, world);
-      // Remember situation as it can be changed during applySuccess.
-      var situationId = worldCopy.currentSituation.id;
-      var storyline = new Storyline();
-      _description = applySuccess(actorInWorldCopy, worldCopy, storyline);
-      worldCopy.updateSituationById(
-          situationId, (b) => b.state = b.state.elapseTime());
-      worldCopy.elapseTime();
-      worldCopy.currentSituation.update(worldCopy);
-      _addWorldRecord(builder, worldCopy);
+      Storyline storyline =
+          _applyToWorldCopy(worldCopy, actor, world, applySuccess);
 
       yield new PlanConsequence(
           worldCopy, current, this, storyline, successChance,
@@ -56,23 +45,42 @@ abstract class ActorAction {
       }
 
       var worldCopy = new WorldState.duplicate(world);
-      var actorInWorldCopy =
-          worldCopy.actors.singleWhere((a) => a.id == actor.id);
-      var builder = _prepareWorldRecord(actor, world);
-      // Remember situation as it can be changed during applyFailure.
-      var situationId = worldCopy.currentSituation.id;
-      var storyline = new Storyline();
-      _description = applyFailure(actorInWorldCopy, worldCopy, storyline);
-      worldCopy.updateSituationById(
-          situationId, (b) => b.state = b.state.elapseTime());
-      worldCopy.elapseTime();
-      worldCopy.currentSituation.update(worldCopy);
-      _addWorldRecord(builder, worldCopy);
+      Storyline storyline =
+          _applyToWorldCopy(worldCopy, actor, world, applyFailure);
 
       yield new PlanConsequence(
           worldCopy, current, this, storyline, 1 - successChance,
           isFailure: true);
     }
+  }
+
+  Storyline _applyToWorldCopy(
+      WorldState worldCopy,
+      Actor actor,
+      WorldState world,
+      String applyFunction(
+          Actor actor, WorldState world, Storyline storyline)) {
+    // Find actor by id.
+    var actorInWorldCopy =
+        worldCopy.actors.singleWhere((a) => a.id == actor.id);
+    var builder = _prepareWorldRecord(actor, world);
+    // Remember situation as it can be changed during applySuccess.
+    var situationId = worldCopy.currentSituation.id;
+    var storyline = new Storyline();
+    _description = applyFunction(actorInWorldCopy, worldCopy, storyline);
+    worldCopy.updateSituationById(
+        situationId, (b) => b.state = b.state.elapseTime());
+    worldCopy.elapseTime();
+    worldCopy.currentSituation.update(worldCopy);
+    // Remove ended situations
+    while (
+        worldCopy.currentSituation?.state?.getCurrentActor(worldCopy) == null) {
+      if (worldCopy.currentSituation == null) break;
+      worldCopy.popSituation();
+      worldCopy.currentSituation.update(worldCopy);
+    }
+    _addWorldRecord(builder, worldCopy);
+    return storyline;
   }
 
   /// Changes the [world].
@@ -154,7 +162,8 @@ class EnemyTargetActionGenerator extends ActionGenerator {
 
   @override
   Iterable<ActorAction> build(Actor actor, WorldState world) {
-    var situationActors = world.currentSituation.state.getActors(world.actors);
+    var situationActors =
+        world.currentSituation.state.getActors(world.actors, world);
     var enemies =
         situationActors.where((other) => other.team.isEnemyWith(actor.team));
     return enemies.map/*<ActorAction>*/((Actor enemy) => new EnemyTargetAction(

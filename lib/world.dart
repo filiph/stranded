@@ -19,7 +19,8 @@ class WorldState {
   /// This is a push-down automaton.
   final List<Situation> situations;
 
-  Situation get currentSituation => situations.last;
+  Situation get currentSituation =>
+      situations.isNotEmpty ? situations.last : null;
 
   /// The age of this WorldState. Every 'turn', this number increases by one.
   int time;

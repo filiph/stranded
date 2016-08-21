@@ -90,7 +90,7 @@ abstract class SituationState {
   SituationState elapseTime();
 
   /// Filters the [actors] that are active in this situation.
-  Iterable<Actor> getActors(Iterable<Actor> actors);
+  Iterable<Actor> getActors(Iterable<Actor> actors, WorldState world);
 
   Actor getCurrentActor(WorldState world) => getActorAtTime(time, world);
 }

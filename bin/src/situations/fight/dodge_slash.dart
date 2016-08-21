@@ -11,7 +11,6 @@ var dodgeSlash = new EnemyTargetActionGenerator("dodge it",
         w.currentSituation.state is SlashSituation,
     chance: 0.5, success: (a, enemy, WorldState w, Storyline s) {
   a.report(s, "<subject> dodge<s> it", object: enemy, positive: true);
-  w.popSituation();
   return "$a dodges $enemy";
 }, failure: (Actor a, Actor enemy, WorldState w, Storyline s) {
   //print("$a tr<ies> to dodge but $enemy slashes him");
@@ -21,6 +20,5 @@ var dodgeSlash = new EnemyTargetActionGenerator("dodge it",
   a.report(s, "<subject> fall<s> to the ground", negative: true);
   a.report(s, "<subject> die<s>", negative: true);
   w.updateActorById(a.id, (b) => b.isAlive = false);
-  w.popSituation();
   return "$a fails to dodge $enemy";
 });
