@@ -47,8 +47,8 @@ abstract class Situation implements Built<Situation, SituationBuilder> {
   Iterable<ActionGenerator> get actionBuilderWhitelist =>
       state.actionBuilderWhitelist;
 
-  void update(WorldState world) {
-    state.update(world);
+  void onAfterAction(WorldState world) {
+    state.onAfterAction(world);
   }
 
   // TODO: toMap (save [time] as well as currentActor (because we want to make
@@ -82,7 +82,7 @@ abstract class SituationState {
   /// TODO: add actionWhitelist?
   Iterable<ActionGenerator> get actionBuilderWhitelist => null;
 
-  void update(WorldState world) {
+  void onAfterAction(WorldState world) {
     // No-op by default.
   }
 

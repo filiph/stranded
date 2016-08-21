@@ -19,6 +19,7 @@ var parrySlash = new EnemyTargetActionGenerator("parry it",
       object: a, but: true, positive: true);
   a.report(s, "<subject> fall<s> to the ground", negative: true);
   a.report(s, "<subject> die<s>", negative: true);
+  s.addParagraph();
   w.updateActorById(a.id, (b) => b.isAlive = false);
   return "$a fails to dodge $enemy";
 });

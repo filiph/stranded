@@ -69,6 +69,7 @@ abstract class Actor extends Object
   Pronoun get pronoun;
 
   Team get team;
+
   /// Computes gratitude towards [other] given the state of the [world].
   ///
   /// Goes through action records.
@@ -182,26 +183,37 @@ abstract class Actor extends Object
 //    num safetySum = safetyFeelings.fold(0, (prev, el) => prev + el.value);
 //    num safety = safetySum / world.actors.length;
 
-    // People want to be useful.
-    var otherActors = world.actors.where((a) => a.id != id);
-    var othersGratitude = otherActors.map((a) => a.getGratitude(this, world));
-    num gratitudeSum = othersGratitude.fold(0, (a, b) => a + b);
-    num gratitude = gratitudeSum / world.actors.length;
+//    // People want to be useful.
+//    var otherActors = world.actors.where((a) => a.id != id);
+//    var othersGratitude = otherActors.map((a) => a.getGratitude(this, world));
+//    num gratitudeSum = othersGratitude.fold(0, (a, b) => a + b);
+//    num gratitude = gratitudeSum / world.actors.length;
+//
+//    // People want luxury
+//    Map<ItemType, num> itemScores = new Map<ItemType, num>();
+//    for (var item in items) {
+//      num runningScore = itemScores.putIfAbsent(item.type, () => 0);
+//      if (item.luxuryIsCumulative) {
+//        itemScores[item.type] = runningScore + item.luxuryScore;
+//      } else {
+//        itemScores[item.type] =
+//            item.luxuryScore > runningScore ? item.luxuryScore : runningScore;
+//      }
+//    }
+//    num luxurySum = itemScores.values.fold(0, (prev, val) => prev + val);
 
-    // People want luxury
-    Map<ItemType, num> itemScores = new Map<ItemType, num>();
-    for (var item in items) {
-      num runningScore = itemScores.putIfAbsent(item.type, () => 0);
-      if (item.luxuryIsCumulative) {
-        itemScores[item.type] = runningScore + item.luxuryScore;
-      } else {
-        itemScores[item.type] =
-            item.luxuryScore > runningScore ? item.luxuryScore : runningScore;
-      }
-    }
-    num luxurySum = itemScores.values.fold(0, (prev, val) => prev + val);
+//    return /*safety + */ gratitude + luxurySum;
+    int score = 0;
+    if (isAlive) score += 10;
 
-    return /*safety + */ gratitude + luxurySum;
+    var friends = world.actors.where((a) => a.team == team && a.isAlive).length;
+    score += friends * 2;
+
+    var enemies =
+        world.actors.where((a) => a.isEnemyOf(this) && isAlive).length;
+    score -= enemies * 1;
+
+    return score;
   }
 
   bool wields(ItemType value) =>
@@ -230,7 +242,6 @@ abstract class ActorBuilder implements Builder<Actor, ActorBuilder> {
 
   factory ActorBuilder() = _$ActorBuilder;
   ActorBuilder._();
-
 }
 
 class ActorMap<T> extends CanonicalizedMap<int, Actor, T> {
@@ -298,6 +309,4 @@ class ActorMap<T> extends CanonicalizedMap<int, Actor, T> {
 //  }
 //}
 
-enum Pose {
-  standing, falling, onGround
-}
+enum Pose { standing, falling, onGround }

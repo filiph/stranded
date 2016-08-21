@@ -14,6 +14,7 @@ var offBalanceOpportunityThrust = new EnemyTargetActionGenerator(
     chance: 0.7, success: (a, enemy, WorldState w, Storyline s) {
   a.report(s, "<subject> stab<s> <object>", object: enemy, positive: true);
   enemy.report(s, "<subject> collapse<s>", negative: true);
+  s.addParagraph();
   w.updateActorById(enemy.id, (b) => b.isAlive = false);
   return "$a stabs $enemy";
 }, failure: (Actor a, Actor enemy, WorldState w, Storyline s) {

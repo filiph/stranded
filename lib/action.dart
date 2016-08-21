@@ -71,13 +71,13 @@ abstract class ActorAction {
     worldCopy.updateSituationById(
         situationId, (b) => b.state = b.state.elapseTime());
     worldCopy.elapseTime();
-    worldCopy.currentSituation.update(worldCopy);
+    worldCopy.currentSituation.onAfterAction(worldCopy);
     // Remove ended situations
     while (
         worldCopy.currentSituation?.state?.getCurrentActor(worldCopy) == null) {
       if (worldCopy.currentSituation == null) break;
       worldCopy.popSituation();
-      worldCopy.currentSituation.update(worldCopy);
+      worldCopy.currentSituation.onAfterAction(worldCopy);
     }
     _addWorldRecord(builder, worldCopy);
     return storyline;

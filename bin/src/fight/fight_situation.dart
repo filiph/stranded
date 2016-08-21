@@ -22,7 +22,7 @@ abstract class FightSituation extends SituationState
   factory FightSituation([updates(FightSituationBuilder b)]) = _$FightSituation;
 
   @override
-  void update(WorldState world) {
+  void onAfterAction(WorldState world) {
     bool canFight(Iterable<int> teamIds) =>
         teamIds.any((id) => world.getActorById(id).isAliveAndActive);
     if (!canFight(playerTeamIds) || !canFight(enemyTeamIds)) {

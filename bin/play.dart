@@ -10,14 +10,12 @@ import 'package:stranded/item.dart';
 import 'package:stranded/plan_consequence.dart';
 import 'package:stranded/team.dart';
 import 'package:stranded/situation.dart';
+import 'package:stranded/storyline/randomly.dart';
 import 'package:stranded/storyline/storyline.dart';
 
-import 'src/situations/fight/fight_situation.dart';
-import 'src/situations/fight/slash.dart';
-import 'src/situations/fight/dodge_slash.dart';
-import 'package:stranded/storyline/randomly.dart';
-import 'src/situations/fight/parry_slash.dart';
-import 'src/situations/fight/kick.dart';
+import 'src/fight/fight_situation.dart';
+import 'src/fight/slash.dart';
+import 'src/fight/kick.dart';
 
 main() {
   var filip = new Actor((b) => b
