@@ -17,6 +17,7 @@ import 'src/situations/fight/slash.dart';
 import 'src/situations/fight/dodge_slash.dart';
 import 'package:stranded/storyline/randomly.dart';
 import 'src/situations/fight/parry_slash.dart';
+import 'src/situations/fight/kick.dart';
 
 main() {
   var filip = new Actor((b) => b
@@ -64,8 +65,7 @@ main() {
 
   Set<ActionGenerator> actionBuilders = new Set<ActionGenerator>();
   actionBuilders.add(slashWithSword);
-  actionBuilders.add(dodgeSlash);
-  actionBuilders.add(parrySlash);
+  actionBuilders.add(kickOffBalance);
 
 //  world.validate();
 
