@@ -60,12 +60,15 @@ class ActorPlanner {
     var initialScore = currentActor.scoreWorld(_initial.world);
 
     for (var action in actions) {
-//      TODO: compute (simpler) 'other' plans for each other player...
-//        - after each action.apply, we need to simulate other actors (var planner = new ActorPlanner(otherActor, world, actions);)
+      if (!action.isApplicable(currentActor, _initial.world)) {
+        // Bail early if action isn't possible at all.
+        continue;
+      }
       var consequenceStats = _getConsequenceStats(_initial, action, maxOrder);
 
       if (consequenceStats.isEmpty) {
-        // This action isn't even possible in [_initial.world].
+        // This action is possible but we couldn't get to any outcomes while
+        // planning.
         firstActionScores[action] = double.NEGATIVE_INFINITY;
         continue;
       }
@@ -112,18 +115,18 @@ class ActorPlanner {
   Iterable<ConsequenceStats> _getConsequenceStats(
       PlanConsequence initial, ActorAction firstAction, int maxOrder) sync* {
     // Actor object changes during planning, so we need to look up via id.
-    var currentActor = initial.world.actors.singleWhere((a) => a.id == actorId);
+    var mainActor = initial.world.actors.singleWhere((a) => a.id == actorId);
 
     var open = new Queue<PlanConsequence>();
     final closed = new Set<WorldState>();
 
-    if (!firstAction.isApplicable(currentActor, initial.world)) {
+    if (!firstAction.isApplicable(mainActor, initial.world)) {
       return;
     }
 
     var initialWorldHash = initial.world.hashCode;
     for (var firstConsequence
-        in firstAction.apply(currentActor, initial, initial.world)) {
+        in firstAction.apply(mainActor, initial, initial.world)) {
       if (initial.world.hashCode != initialWorldHash) {
         throw new StateError("Action ${firstAction} modified world state when "
             "producing $firstConsequence.");
@@ -134,16 +137,20 @@ class ActorPlanner {
     while (open.isNotEmpty) {
       var current = open.removeFirst();
 
-      if (current.world.situations.isEmpty) continue;
       if (current.order >= maxOrder) break;
+      if (current.world.situations.isEmpty) continue;
 
-      // Actor object changes during planning, so we need to look up via id.
       var currentActor =
-          current.world.actors.singleWhere((a) => a.id == actorId);
+          current.world.currentSituation.state.getCurrentActor(current.world);
 
-      var score = currentActor.scoreWorld(current.world);
-      yield new ConsequenceStats(
-          score, current.cumulativeProbability, current.order);
+      // This actor is the one we originally started planning for.
+      bool currentActorIsMain = currentActor.id == actorId;
+
+      if (currentActorIsMain) {
+        var score = currentActor.scoreWorld(current.world);
+        yield new ConsequenceStats(
+            score, current.cumulativeProbability, current.order);
+      }
 
       for (ActorAction action in actions) {
         if (!action.isApplicable(currentActor, current.world)) continue;

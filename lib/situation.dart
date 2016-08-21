@@ -4,7 +4,6 @@ import 'dart:math' show Random;
 
 import 'package:built_value/built_value.dart';
 
-import 'action.dart';
 import 'actor.dart';
 import 'world.dart';
 
@@ -39,14 +38,6 @@ abstract class Situation implements Built<Situation, SituationBuilder> {
   factory Situation.withState(SituationState state) =>
       new Situation((b) => b.state = state);
 
-  /// Whitelist of action builders that can be used by actors in this situation.
-  ///
-  /// When this is `null`, then all actions are allowed.
-  ///
-  /// TODO: add actionWhitelist?
-  Iterable<ActionGenerator> get actionBuilderWhitelist =>
-      state.actionBuilderWhitelist;
-
   void onAfterAction(WorldState world) {
     state.onAfterAction(world);
   }
@@ -74,13 +65,6 @@ abstract class SituationState {
 
   /// Returns the actor whose turn it is at specified [time].
   Actor getActorAtTime(int time, WorldState world);
-
-  /// Whitelist of action builders that can be used by actors in this situation.
-  ///
-  /// When this is `null`, then all actions are allowed.
-  ///
-  /// TODO: add actionWhitelist?
-  Iterable<ActionGenerator> get actionBuilderWhitelist => null;
 
   void onAfterAction(WorldState world) {
     // No-op by default.

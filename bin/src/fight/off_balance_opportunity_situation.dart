@@ -5,11 +5,8 @@ import 'package:built_value/built_value.dart';
 import 'package:stranded/situation.dart';
 import 'package:stranded/actor.dart';
 import 'package:quiver/core.dart';
-import 'package:stranded/action.dart';
 import 'package:stranded/world.dart';
-import 'package:stranded/storyline/randomly.dart';
 import 'off_balance_opportunity_thrust.dart';
-import 'pass.dart';
 
 part 'off_balance_opportunity_situation.g.dart';
 
@@ -38,10 +35,6 @@ abstract class OffBalanceOpportunitySituation extends SituationState
       new OffBalanceOpportunitySituation((b) => b
         ..actorId = actor.id
         ..time = time);
-
-  @override
-  List<ActionGenerator> get actionBuilderWhitelist =>
-      <ActionGenerator>[offBalanceOpportunityThrust, passOpportunity];
 
   @override
   Actor getActorAtTime(int time, WorldState world) {

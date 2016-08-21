@@ -1,6 +1,5 @@
 import 'package:stranded/action.dart';
 import 'package:stranded/actor.dart';
-import 'package:stranded/item.dart';
 import 'package:stranded/world.dart';
 import 'package:stranded/storyline/storyline.dart';
 

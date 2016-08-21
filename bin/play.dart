@@ -16,6 +16,10 @@ import 'package:stranded/storyline/storyline.dart';
 import 'src/fight/fight_situation.dart';
 import 'src/fight/slash.dart';
 import 'src/fight/kick.dart';
+import 'src/fight/dodge_slash.dart';
+import 'src/fight/parry_slash.dart';
+import 'src/fight/off_balance_opportunity_thrust.dart';
+import 'src/fight/pass.dart';
 
 main() {
   var filip = new Actor((b) => b
@@ -63,7 +67,11 @@ main() {
 
   Set<ActionGenerator> actionBuilders = new Set<ActionGenerator>();
   actionBuilders.add(slashWithSword);
+  actionBuilders.add(dodgeSlash);
+  actionBuilders.add(parrySlash);
   actionBuilders.add(kickOffBalance);
+  actionBuilders.add(offBalanceOpportunityThrust);
+  actionBuilders.add(passOpportunity);
 
 //  world.validate();
 
@@ -74,30 +82,17 @@ main() {
     var situation = world.currentSituation;
     var actor = situation.state.getCurrentActor(world);
 
-    List<ActorAction> availableActions;
-    if (situation.actionBuilderWhitelist != null) {
-      availableActions = situation.actionBuilderWhitelist
-          .map((builder) => builder.build(actor, world))
-          .expand((x) => x)
-          .toList();
-    } else {
-      availableActions = new List<ActorAction>.from(actions);
-      for (var builder in actionBuilders) {
-        Iterable<ActorAction> builtActions = builder.build(actor, world);
-        availableActions.addAll(builtActions);
-      }
+    var availableActions = new List<ActorAction>.from(actions);
+    for (var builder in actionBuilders) {
+      Iterable<ActorAction> builtActions = builder.build(actor, world);
+      availableActions.addAll(builtActions);
     }
 
-    List<ActorAction> applicableActions = availableActions
-        .where((action) => action.isApplicable(actor, world))
-        .toList();
-
-    var planner = new ActorPlanner(actor, world, applicableActions);
-//    print("Planning for ${actor.name}");
-    planner.plan();
+    var planner = new ActorPlanner(actor, world, availableActions);
+    planner.plan(maxOrder: 5);
 
     ActorAction selected;
-    if (actor == filip) {
+    if (actor.isPlayer) {
       // Player
       print(storyline.toString());
       storyline.clear();
