@@ -1,6 +1,7 @@
 library stranded.planner;
 
 import 'dart:collection';
+import 'dart:math' as math;
 
 import 'package:stranded/action.dart';
 import 'package:stranded/actor.dart';
@@ -85,6 +86,7 @@ class ActorPlanner {
       }
 
       var score = combineScores(consequenceStats, initialScore, maxOrder);
+      assert(!score.isNaN);
 
       firstActionScores[action] = score;
     }
@@ -92,42 +94,54 @@ class ActorPlanner {
     _resultsReady = true;
   }
 
+  PlannerRecommendation getRecommendations() =>
+      new PlannerRecommendation.fromScores(firstActionScores);
+
   /// Computes the combined score for a bunch of consequences.
   ///
   /// TODO: allow to personalize this (for example, optimistic characters
   /// only take `isSuccess == true` consequences into account).
   num combineScores(
       Iterable<ConsequenceStats> stats, num initialScore, int maxOrder) {
-    var list = stats
-        .where((stat) => stat.order == maxOrder - 1)
-        .toList(growable: false);
-    return list
-            .map((stat) =>
-                (stat.score - initialScore) * stat.cumulativeProbability)
-            .fold(0, (a, b) => a + b) /
-        list.length;
-//    var uplifts = <num>[];
-//
-//    ConsequenceStats _bestCase;
-//
-//    for (var consequence in stats) {
-//      if (consequence.cumulativeProbability > bestCaseProbabilityThreshold) {
-//        if (_bestCase == null) {
-//          _bestCase = consequence;
-//        } else if (consequence.score > _bestCase.score) {
-//          _bestCase = consequence;
-//        }
-//      }
-//
-//      var uplift = (consequence.score - initialScore) *
-//          consequence.cumulativeProbability;
-//      uplifts.add(uplift);
-//    }
-//
-//    var average = uplifts.fold(0, (a, b) => a + b) / uplifts.length;
-//    var best = _bestCase == null ? 0 : _bestCase.score / _bestCase.order;
-//
-//    return best + average;
+    // This approach has a problem: sometimes the stats are not available for
+    // maxOrder at all...
+//    var list = stats
+//        .where((stat) => stat.order == maxOrder - 1)
+//        .toList(growable: false);
+//    num result = list
+//            .map((stat) =>
+//                (stat.score - initialScore) * stat.cumulativeProbability)
+//            .fold(0, (a, b) => a + b) /
+//        list.length;
+//    assert(!result.isNaN);
+//    assert(!result.isInfinite);
+//    return result;
+
+    var uplifts = <num>[];
+
+    ConsequenceStats _bestCase;
+
+    for (var consequence in stats) {
+      if (consequence.cumulativeProbability > bestCaseProbabilityThreshold) {
+        if (_bestCase == null) {
+          _bestCase = consequence;
+        } else if (consequence.score > _bestCase.score) {
+          _bestCase = consequence;
+        }
+      }
+
+      var uplift = (consequence.score - initialScore) *
+          consequence.cumulativeProbability;
+      uplifts.add(uplift);
+    }
+
+    var average = uplifts.fold(0, (a, b) => a + b) / uplifts.length;
+    var best = _bestCase == null ? 0 : _bestCase.score / _bestCase.order;
+
+    var result = best + average;
+    assert(!result.isNaN);
+    assert(!result.isInfinite);
+    return result;
   }
 
   /// Returns the stats for consequences of a given [initial] state after
@@ -231,5 +245,66 @@ class ActorPlanner {
 
       closed.add(current.world);
     }
+  }
+}
+
+class PlannerRecommendation {
+  final List<int> weights;
+  final List<ActorAction> actions;
+
+  /// The [weights] have to add up to this number.
+  ///
+  /// We're using [int] instead of [num] for weights because we want to
+  /// avoid rounding errors (when all weights add up to 0.99 and a random
+  /// function returns 0.995).
+  static const int weightsResolution = 1000;
+  static const num _worstOptionWeight = 0.1;
+
+  static num _sum(num a, num b) => a + b;
+
+  PlannerRecommendation(this.actions, this.weights) {
+    assert(actions.length == weights.length);
+    assert(weights.fold(0, _sum) == weightsResolution);
+    // TODO: assert that it's a gradient from best to worst
+  }
+
+  factory PlannerRecommendation.fromScores(Map<ActorAction, num> scores) {
+    if (scores.isEmpty) throw new ArgumentError.value(scores);
+    var actions = scores.keys.toList();
+    // Remove impossible actions. TODO: make sure we don't duplicate effort here
+    actions.removeWhere((a) => scores[a] == double.NEGATIVE_INFINITY);
+
+    if (actions.length == 1) {
+      return new PlannerRecommendation(actions, [weightsResolution]);
+    }
+
+    // Make the first action be the best one.
+    actions.sort((a, b) => -scores[a].compareTo(scores[b]));
+
+    num minimum = scores.values.fold(double.INFINITY, math.min);
+    num maximum = scores.values.fold(double.NEGATIVE_INFINITY, math.max);
+
+    // Make sure even the worst option has some weight.
+    num lowerBound = minimum - (maximum - minimum) * _worstOptionWeight;
+    if (minimum == maximum) {
+      // When all options are equal, make sure we don't divide by zero.
+      lowerBound -= 1;
+    }
+    num totalLength = maximum - lowerBound;
+
+    var fractionWeights = new List<double>.generate(actions.length, (int i) {
+      var action = actions[i];
+      var score = scores[action];
+      return (score - lowerBound) / totalLength;
+    }, growable: false);
+    num fractionTotal = fractionWeights.fold(0, _sum);
+    List<int> weights = fractionWeights
+        .map/*<int>*/((n) => (n / fractionTotal * weightsResolution).round())
+        .toList(growable: false);
+
+    // Account for rounding errors by modifying the best option.
+    int weightsDifference = weightsResolution - weights.fold(0, _sum);
+    weights[weights.length - 1] += weightsDifference;
+    return new PlannerRecommendation(actions, weights);
   }
 }

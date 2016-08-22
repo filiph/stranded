@@ -37,6 +37,22 @@ class Randomly {
     throw new ArgumentError("The weights do not add up to total=$total");
   }
 
+  /// Returns random index, biased by weight.
+  ///
+  /// Same as [Randomly.chooseWeighted], but weights and total are [int] so that
+  /// we avoid rounding errors.
+  static int chooseWeightedPrecise(Iterable<int> weights, {int max: 1000}) {
+    int pick = _random.nextInt(max);
+    int sum = 0;
+    int index = 0;
+    for (int weight in weights) {
+      if (sum + weight >= pick) return index;
+      sum += weight;
+      index += 1;
+    }
+    throw new ArgumentError("The weights do not add up to total=$max");
+  }
+
   /**
    * Function gets a list of choices, picks one of them randomly.
    */

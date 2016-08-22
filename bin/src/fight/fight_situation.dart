@@ -25,7 +25,13 @@ abstract class FightSituation extends SituationState
   bool shouldContinue(WorldState world) {
     bool canFight(Iterable<int> teamIds) =>
         teamIds.any((id) => world.getActorById(id).isAliveAndActive);
-    return canFight(playerTeamIds) && canFight(enemyTeamIds);
+    bool isPlayerAndAlive(int id) {
+      var actor = world.getActorById(id);
+      return actor.isPlayer && actor.isAliveAndActive;
+    }
+    return canFight(playerTeamIds) &&
+        canFight(enemyTeamIds) &&
+        playerTeamIds.any(isPlayerAndAlive);
   }
 
   @override
@@ -41,8 +47,8 @@ abstract class FightSituation extends SituationState
   }
 
   @override
-  Iterable<Actor> getActors(Iterable<Actor> actors, _) => actors.where(
-      (Actor actor) =>
+  Iterable<Actor> getActors(Iterable<Actor> actors, _) =>
+      actors.where((Actor actor) =>
           actor.isAliveAndActive &&
           (playerTeamIds.contains(actor.id) ||
               enemyTeamIds.contains(actor.id)));
