@@ -71,13 +71,15 @@ abstract class ActorAction {
     worldCopy.updateSituationById(
         situationId, (b) => b.state = b.state.elapseTime());
     worldCopy.elapseTime();
-    worldCopy.currentSituation.onAfterAction(worldCopy);
-    // Remove ended situations
-    while (
-        worldCopy.currentSituation?.state?.getCurrentActor(worldCopy) == null) {
+    worldCopy.getSituationById(situationId)?.onAfterAction(worldCopy);
+
+    // Remove ended situations: the ones that don't return an actor anymore,
+    // and the ones that return shouldContinue(world) == true.
+    while (worldCopy.currentSituation?.state?.getCurrentActor(worldCopy) ==
+            null ||
+        worldCopy.currentSituation?.state?.shouldContinue(worldCopy) != true) {
       if (worldCopy.currentSituation == null) break;
       worldCopy.popSituation();
-      worldCopy.currentSituation.onAfterAction(worldCopy);
     }
     _addWorldRecord(builder, worldCopy);
     return storyline;
@@ -107,6 +109,7 @@ abstract class ActorAction {
           "should return it from your world-modifying function.");
     }
     builder.markAfterAction(world);
+    builder.description = _description;
     world.actionRecords.add(builder.build());
   }
 }

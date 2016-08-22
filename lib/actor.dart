@@ -210,7 +210,7 @@ abstract class Actor extends Object
     score += friends * 2;
 
     var enemies =
-        world.actors.where((a) => a.isEnemyOf(this) && isAlive).length;
+        world.actors.where((a) => a.isEnemyOf(this) && a.isAlive).length;
     score -= enemies * 1;
 
     return score;
@@ -309,4 +309,4 @@ class ActorMap<T> extends CanonicalizedMap<int, Actor, T> {
 //  }
 //}
 
-enum Pose { standing, falling, onGround }
+enum Pose { standing, offBalance, onGround }

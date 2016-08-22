@@ -8,5 +8,5 @@ var passOpportunity = new EnemyTargetActionGenerator("pass",
     valid: (Actor a, enemy, w) =>
         w.currentSituation.state is OffBalanceOpportunitySituation,
     chance: 1.0, success: (a, enemy, WorldState w, Storyline s) {
-  return "$a passes the opportunity";
+  return "${a.name} passes the opportunity";
 });

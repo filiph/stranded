@@ -63,15 +63,15 @@ main() {
   WorldState world = new WorldState(
       new Set.from([filip, grace, brant, orc, goblin]), initialSituation);
 
-  Set<ActorAction> actions = new Set<ActorAction>();
+  List<ActorAction> actions = new List<ActorAction>();
 
-  Set<ActionGenerator> actionBuilders = new Set<ActionGenerator>();
-  actionBuilders.add(slashWithSword);
-  actionBuilders.add(dodgeSlash);
-  actionBuilders.add(parrySlash);
-  actionBuilders.add(kickOffBalance);
-  actionBuilders.add(offBalanceOpportunityThrust);
-  actionBuilders.add(passOpportunity);
+  List<ActionGenerator> actionGenerators = new List<ActionGenerator>();
+  actionGenerators.add(slashWithSword);
+  actionGenerators.add(dodgeSlash);
+  actionGenerators.add(parrySlash);
+  actionGenerators.add(kickOffBalance);
+  actionGenerators.add(offBalanceOpportunityThrust);
+  actionGenerators.add(passOpportunity);
 
 //  world.validate();
 
@@ -82,14 +82,8 @@ main() {
     var situation = world.currentSituation;
     var actor = situation.state.getCurrentActor(world);
 
-    var availableActions = new List<ActorAction>.from(actions);
-    for (var builder in actionBuilders) {
-      Iterable<ActorAction> builtActions = builder.build(actor, world);
-      availableActions.addAll(builtActions);
-    }
-
-    var planner = new ActorPlanner(actor, world, availableActions);
-    planner.plan(maxOrder: 5);
+    var planner = new ActorPlanner(actor, world, actions, actionGenerators);
+    planner.plan(maxOrder: 7);
 
     ActorAction selected;
     if (actor.isPlayer) {

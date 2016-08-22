@@ -20,12 +20,14 @@ class ActorPlanner {
   final PlanConsequence _initial;
 
   final List<ActorAction> actions;
+  final List<ActionGenerator> actionGenerators;
   int planConsequencesComputed = 0;
   bool _resultsReady = false;
 
   final Map<ActorAction, num> firstActionScores = new Map();
 
-  ActorPlanner(Actor actor, WorldState initialWorld, this.actions)
+  ActorPlanner(
+      Actor actor, WorldState initialWorld, this.actions, this.actionGenerators)
       : actorId = actor.id,
         _initial = new PlanConsequence.initial(initialWorld);
 
@@ -52,6 +54,14 @@ class ActorPlanner {
     }
   }
 
+  Iterable<ActorAction> _generateAllActions(
+      Actor actor, WorldState world) sync* {
+    yield* actions;
+    for (var generator in actionGenerators) {
+      yield* generator.build(actor, world);
+    }
+  }
+
   void plan({int maxOrder: 3}) {
     firstActionScores.clear();
 
@@ -59,12 +69,13 @@ class ActorPlanner {
         _initial.world.actors.singleWhere((a) => a.id == actorId);
     var initialScore = currentActor.scoreWorld(_initial.world);
 
-    for (var action in actions) {
+    for (var action in _generateAllActions(currentActor, _initial.world)) {
       if (!action.isApplicable(currentActor, _initial.world)) {
         // Bail early if action isn't possible at all.
         continue;
       }
-      var consequenceStats = _getConsequenceStats(_initial, action, maxOrder);
+      var consequenceStats = _getConsequenceStats(_initial, action, maxOrder)
+          .toList(growable: false);
 
       if (consequenceStats.isEmpty) {
         // This action is possible but we couldn't get to any outcomes while
@@ -73,7 +84,7 @@ class ActorPlanner {
         continue;
       }
 
-      var score = combineScores(consequenceStats, initialScore);
+      var score = combineScores(consequenceStats, initialScore, maxOrder);
 
       firstActionScores[action] = score;
     }
@@ -85,29 +96,38 @@ class ActorPlanner {
   ///
   /// TODO: allow to personalize this (for example, optimistic characters
   /// only take `isSuccess == true` consequences into account).
-  num combineScores(Iterable<ConsequenceStats> stats, num initialScore) {
-    var uplifts = <num>[];
-
-    ConsequenceStats _bestCase;
-
-    for (var consequence in stats) {
-      if (consequence.cumulativeProbability > bestCaseProbabilityThreshold) {
-        if (_bestCase == null) {
-          _bestCase = consequence;
-        } else if (consequence.score > _bestCase.score) {
-          _bestCase = consequence;
-        }
-      }
-
-      var uplift = (consequence.score - initialScore) *
-          consequence.cumulativeProbability;
-      uplifts.add(uplift);
-    }
-
-    var average = uplifts.fold(0, (a, b) => a + b) / uplifts.length;
-    var best = _bestCase == null ? 0 : _bestCase.score / _bestCase.order;
-
-    return best + average;
+  num combineScores(
+      Iterable<ConsequenceStats> stats, num initialScore, int maxOrder) {
+    var list = stats
+        .where((stat) => stat.order == maxOrder - 1)
+        .toList(growable: false);
+    return list
+            .map((stat) =>
+                (stat.score - initialScore) * stat.cumulativeProbability)
+            .fold(0, (a, b) => a + b) /
+        list.length;
+//    var uplifts = <num>[];
+//
+//    ConsequenceStats _bestCase;
+//
+//    for (var consequence in stats) {
+//      if (consequence.cumulativeProbability > bestCaseProbabilityThreshold) {
+//        if (_bestCase == null) {
+//          _bestCase = consequence;
+//        } else if (consequence.score > _bestCase.score) {
+//          _bestCase = consequence;
+//        }
+//      }
+//
+//      var uplift = (consequence.score - initialScore) *
+//          consequence.cumulativeProbability;
+//      uplifts.add(uplift);
+//    }
+//
+//    var average = uplifts.fold(0, (a, b) => a + b) / uplifts.length;
+//    var best = _bestCase == null ? 0 : _bestCase.score / _bestCase.order;
+//
+//    return best + average;
   }
 
   /// Returns the stats for consequences of a given [initial] state after
@@ -117,8 +137,21 @@ class ActorPlanner {
     // Actor object changes during planning, so we need to look up via id.
     var mainActor = initial.world.actors.singleWhere((a) => a.id == actorId);
 
-    var open = new Queue<PlanConsequence>();
-    final closed = new Set<WorldState>();
+    // DEBUG TODO: remove
+    bool DEBUG = false;
+    if (DEBUG && (firstAction as EnemyTargetAction).name.contains("Kick")) {
+      print("INITIAL");
+      print(
+          "adding: score=${mainActor.scoreWorld(initial.world)} * cumProb=${initial
+          .cumulativeProbability} (prob=${initial.probability}, ord=${initial
+          .order})");
+      print("${' ' * initial.order}- ${initial.action}");
+      print("-----");
+    }
+    num initialScore = mainActor.scoreWorld(initial.world);
+
+    Queue<PlanConsequence> open = new Queue<PlanConsequence>();
+    final Set<WorldState> closed = new Set<WorldState>();
 
     if (!firstAction.isApplicable(mainActor, initial.world)) {
       return;
@@ -142,19 +175,42 @@ class ActorPlanner {
 
       var currentActor =
           current.world.currentSituation.state.getCurrentActor(current.world);
+      assert(currentActor != null);
 
       // This actor is the one we originally started planning for.
-      bool currentActorIsMain = currentActor.id == actorId;
+      var mainActor = current.world.actors.singleWhere((a) => a.id == actorId);
+      assert(mainActor != null);
+      bool currentActorIsMain = currentActor == mainActor;
 
       if (currentActorIsMain) {
-        var score = currentActor.scoreWorld(current.world);
+        var score = mainActor.scoreWorld(current.world);
         yield new ConsequenceStats(
             score, current.cumulativeProbability, current.order);
       }
 
-      for (ActorAction action in actions) {
+      // DEBUG TODO: remove
+      if (DEBUG && (firstAction as EnemyTargetAction).name.contains("Kick")) {
+        var score = mainActor.scoreWorld(current.world);
+        print("----");
+        print(
+            "SITUATION = ${current.world.currentSituation.state.runtimeType}");
+        print("ACTOR = ${currentActor.name} ($currentActorIsMain)");
+        print(
+            "score=${score - initialScore} * cumProb=${current.cumulativeProbability} "
+            "(prob=${current.probability}, ord=${current.order})");
+        var ars = current.world.actionRecords.toList()
+          ..sort((a, b) => a?.time?.compareTo(b?.time) ?? 1);
+        print(ars.map((a) => a.description).join(' <- '));
+        //${' ' * current.order}
+        // ${current.action} |
+
+      }
+
+      for (ActorAction action
+          in _generateAllActions(currentActor, current.world)) {
         if (!action.isApplicable(currentActor, current.world)) continue;
         var consequences = action.apply(currentActor, current, current.world);
+
         for (PlanConsequence next in consequences) {
           planConsequencesComputed++;
 

@@ -37,11 +37,17 @@ abstract class OffBalanceOpportunitySituation extends SituationState
         ..time = time);
 
   @override
+  void onAfterAction(WorldState world) {
+    world.updateActorById(actorId, (b) => b..pose = Pose.standing);
+  }
+
+  @override
   Actor getActorAtTime(int time, WorldState world) {
     if (time > 0) return null;
     var actor = world.getActorById(actorId);
     List<Actor> enemies = world.actors
-        .where((a) => a.isEnemyOf(actor) && a.id != culpritId)
+        .where((a) =>
+            a.isAliveAndActive && a.isEnemyOf(actor) && a.id != culpritId)
         .toList();
     // TODO: sort by distance, cut off if too far
 
@@ -49,7 +55,7 @@ abstract class OffBalanceOpportunitySituation extends SituationState
       var candidate = enemies.first;
       // Only change the situation when the candidate can actually pull it off.
       if (offBalanceOpportunityThrust.valid(candidate, actor, world)) {
-        return enemies.first;
+        return candidate;
       }
     }
     return null;

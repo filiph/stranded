@@ -14,10 +14,11 @@ var kickOffBalance = new EnemyTargetActionGenerator("kick <object> off balance",
         enemy.pose == Pose.standing,
     chance: 1.0, success: (a, enemy, WorldState w, Storyline s) {
   a.report(s, "<subject> kick<s> <object>", object: enemy);
+  w.updateActorById(enemy.id, (b) => b..pose = Pose.offBalance);
   var situation =
       new Situation.withState(new OffBalanceOpportunitySituation((b) => b
         ..actorId = enemy.id
         ..culpritId = a.id));
   w.pushSituation(situation);
-  return "$a kicks $enemy";
+  return "${a.name} kicks ${enemy.name}";
 });

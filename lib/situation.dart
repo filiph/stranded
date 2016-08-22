@@ -70,6 +70,8 @@ abstract class SituationState {
     // No-op by default.
   }
 
+  bool shouldContinue(WorldState world) => true;
+
   /// Returns updated state with `time++`.
   SituationState elapseTime();
 

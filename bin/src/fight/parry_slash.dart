@@ -12,7 +12,7 @@ var parrySlash = new EnemyTargetActionGenerator("parry it",
     chance: 0.6, success: (a, enemy, WorldState w, Storyline s) {
   a.report(s, "<subject> {parr<ies> it|meet<s> it with <subject's> sword}",
       object: enemy, positive: true);
-  return "$a parries $enemy";
+  return "${a.name} parries ${enemy.name}";
 }, failure: (Actor a, Actor enemy, WorldState w, Storyline s) {
   a.report(s, "<subject> tr<ies> to {parry|meet it with <subject's> sword}");
   enemy.report(s, "<subject> slash<es> <object>",
@@ -21,5 +21,5 @@ var parrySlash = new EnemyTargetActionGenerator("parry it",
   a.report(s, "<subject> die<s>", negative: true);
   s.addParagraph();
   w.updateActorById(a.id, (b) => b.isAlive = false);
-  return "$a fails to dodge $enemy";
+  return "${a.name} fails to dodge ${enemy.name}";
 });

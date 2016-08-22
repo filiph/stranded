@@ -18,5 +18,5 @@ var slashWithSword = new EnemyTargetActionGenerator("slash <object>",
     ..attacker = a
     ..target = enemy));
   w.pushSituation(situation);
-  return "$a slashes at $enemy";
+  return "${a.name} slashes at ${enemy.name}";
 });

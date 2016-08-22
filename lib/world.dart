@@ -61,13 +61,7 @@ class WorldState {
   }
 
   void updateSituationById(int id, updates(SituationBuilder b)) {
-    int index;
-    for (int i = 0; i < situations.length; i++) {
-      if (situations[i].id == id) {
-        index = i;
-        break;
-      }
-    }
+    int index = _findSituationIndex(id);
     if (index == null) return;
 
     situations[index] = situations[index].rebuild((updates));
@@ -93,5 +87,24 @@ class WorldState {
 
   void popSituation() {
     situations.removeLast();
+  }
+
+  /// Returns the index at which the [Situation] with [situationId] resides
+  /// in the [situations] list.
+  int _findSituationIndex(int situationId) {
+    int index;
+    for (int i = 0; i < situations.length; i++) {
+      if (situations[i].id == situationId) {
+        index = i;
+        break;
+      }
+    }
+    return index;
+  }
+
+  Situation getSituationById(int situationId) {
+    int index = _findSituationIndex(situationId);
+    if (index == null) return null;
+    return situations[index];
   }
 }
