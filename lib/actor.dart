@@ -210,7 +210,7 @@ abstract class Actor extends Object
     score += friends * 2;
 
     var enemies =
-        world.actors.where((a) => a.isEnemyOf(this) && a.isAlive).length;
+        world.actors.where((a) => a.isEnemyOf(this) && isAlive).length;
     score -= enemies * 1;
 
     return score;

@@ -36,6 +36,8 @@ abstract class OffBalanceOpportunitySituation extends SituationState
         ..actorId = actor.id
         ..time = time);
 
+  get actionGenerators => [offBalanceOpportunityThrust];
+
   @override
   void onAfterAction(WorldState world, _) {
     world.updateActorById(actorId, (b) {

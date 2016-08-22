@@ -14,13 +14,6 @@ import 'package:stranded/storyline/randomly.dart';
 import 'package:stranded/storyline/storyline.dart';
 
 import 'src/fight/fight_situation.dart';
-import 'src/fight/slash.dart';
-import 'src/fight/kick.dart';
-import 'src/fight/dodge_slash.dart';
-import 'src/fight/parry_slash.dart';
-import 'src/fight/off_balance_opportunity_thrust.dart';
-import 'src/fight/pass.dart';
-import 'src/fight/off_balance_opportunity_push.dart';
 
 main() {
   var filip = new Actor((b) => b
@@ -75,16 +68,6 @@ main() {
   WorldState world = new WorldState(
       new Set.from([filip, briana, orc, goblin]), initialSituation);
 
-  List<ActorAction> actions = new List<ActorAction>();
-
-  List<ActionGenerator> actionGenerators = new List<ActionGenerator>();
-  actionGenerators.add(slashWithSword);
-  actionGenerators.add(dodgeSlash);
-  actionGenerators.add(parrySlash);
-  actionGenerators.add(kickOffBalance);
-  actionGenerators.add(offBalanceOpportunityThrust);
-  actionGenerators.add(passOpportunity);
-
 //  world.validate();
 
   var consequence = new PlanConsequence.initial(world);
@@ -98,20 +81,26 @@ main() {
     var situation = world.currentSituation;
     var actor = situation.state.getCurrentActor(world);
 
-    var planner = new ActorPlanner(actor, world, actions, actionGenerators);
-    planner.plan(maxOrder: 6);
+    var planner = new ActorPlanner(actor, world);
+    planner.plan(maxOrder: 7);
+    var recs = planner.getRecommendations();
 
     ActorAction selected;
     if (actor.isPlayer) {
       // Player
-      print(storyline.toString());
-      storyline.clear();
+      if (recs.actions.length == 1) {
+        // Only one option, select by default.
+        selected = recs.actions.single;
+      } else {
+        print(storyline.toString());
+        storyline.clear();
 
-      planner.generateTable().forEach(print);
-      int option = int.parse(stdin.readLineSync());
-      selected = planner.firstActionScores.keys.toList()[option];
+        planner.generateTable().forEach(print);
+        int option = int.parse(stdin.readLineSync());
+        selected = planner.firstActionScores.keys.toList()[option];
+      }
+
     } else {
-      var recs = planner.getRecommendations();
       selected = recs.actions[Randomly.chooseWeightedPrecise(recs.weights,
           max: PlannerRecommendation.weightsResolution)];
     }

@@ -9,6 +9,9 @@ import 'package:stranded/situation.dart';
 import 'package:stranded/util/alternate_iterables.dart';
 import 'package:stranded/world.dart';
 import 'package:stranded/storyline/storyline.dart';
+import 'package:stranded/action.dart';
+import 'kick.dart';
+import 'slash.dart';
 
 part 'fight_situation.g.dart';
 
@@ -22,6 +25,9 @@ abstract class FightSituation extends SituationState
 
   FightSituation._();
   factory FightSituation([updates(FightSituationBuilder b)]) = _$FightSituation;
+
+  List<ActionGenerator> get actionGenerators =>
+      [kickOffBalance, startSlash];
 
   @override
   bool shouldContinue(WorldState world) {

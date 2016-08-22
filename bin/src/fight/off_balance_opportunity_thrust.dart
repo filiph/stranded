@@ -4,12 +4,9 @@ import 'package:stranded/item.dart';
 import 'package:stranded/world.dart';
 import 'package:stranded/storyline/storyline.dart';
 
-import 'off_balance_opportunity_situation.dart';
-
 var offBalanceOpportunityThrust = new EnemyTargetActionGenerator(
     "stab <object>",
     valid: (Actor a, enemy, WorldState w) =>
-        w.currentSituation.state is OffBalanceOpportunitySituation &&
         a.pose == Pose.standing &&
         enemy.pose == Pose.offBalance &&
         a.wields(ItemType.SWORD),

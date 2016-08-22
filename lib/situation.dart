@@ -7,6 +7,7 @@ import 'package:built_value/built_value.dart';
 import 'actor.dart';
 import 'world.dart';
 import 'package:stranded/storyline/storyline.dart';
+import 'package:stranded/action.dart';
 
 part 'situation.g.dart';
 
@@ -47,6 +48,11 @@ abstract class Situation implements Built<Situation, SituationBuilder> {
     state.onAfterAction(world, storyline);
   }
 
+  /// Actions available to participants of this situation.
+  List<ActorAction> get actions => state.actions;
+  /// Action generators available to participants of this situation.
+  List<ActionGenerator> get actionGenerators => state.actionGenerators;
+
   // TODO: toMap (save [time] as well as currentActor (because we want to make
   //       sure that we load with the same actor although some actors may have
   //       been removed from play))
@@ -82,6 +88,9 @@ abstract class SituationState {
   void onAfterAction(WorldState world, Storyline storyline) {
     // No-op by default.
   }
+
+  List<ActorAction> get actions => const [];
+  List<ActionGenerator> get actionGenerators => const [];
 
   bool shouldContinue(WorldState world) => true;
 

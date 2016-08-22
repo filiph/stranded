@@ -20,15 +20,12 @@ class ActorPlanner {
   final int actorId;
   final PlanConsequence _initial;
 
-  final List<ActorAction> actions;
-  final List<ActionGenerator> actionGenerators;
   int planConsequencesComputed = 0;
   bool _resultsReady = false;
 
   final Map<ActorAction, num> firstActionScores = new Map();
 
-  ActorPlanner(
-      Actor actor, WorldState initialWorld, this.actions, this.actionGenerators)
+  ActorPlanner(Actor actor, WorldState initialWorld)
       : actorId = actor.id,
         _initial = new PlanConsequence.initial(initialWorld);
 
@@ -57,8 +54,8 @@ class ActorPlanner {
 
   Iterable<ActorAction> _generateAllActions(
       Actor actor, WorldState world) sync* {
-    yield* actions;
-    for (var generator in actionGenerators) {
+    yield* world.currentSituation.actions;
+    for (var generator in world.currentSituation.actionGenerators) {
       yield* generator.build(actor, world);
     }
   }
@@ -94,8 +91,10 @@ class ActorPlanner {
     _resultsReady = true;
   }
 
-  PlannerRecommendation getRecommendations() =>
-      new PlannerRecommendation.fromScores(firstActionScores);
+  PlannerRecommendation getRecommendations() {
+    assert(_resultsReady);
+    return new PlannerRecommendation.fromScores(firstActionScores);
+  }
 
   /// Computes the combined score for a bunch of consequences.
   ///
@@ -153,8 +152,8 @@ class ActorPlanner {
 
     // DEBUG TODO: remove
     bool DEBUG = false;
-    if (DEBUG && (firstAction as EnemyTargetAction).name.contains("Kick")) {
-      print("INITIAL");
+    if (DEBUG && (firstAction as EnemyTargetAction).name.contains(" ")) {
+      print("INITIAL - $firstAction");
       print(
           "adding: score=${mainActor.scoreWorld(initial.world)} * cumProb=${initial
           .cumulativeProbability} (prob=${initial.probability}, ord=${initial
@@ -185,7 +184,15 @@ class ActorPlanner {
       var current = open.removeFirst();
 
       if (current.order >= maxOrder) break;
-      if (current.world.situations.isEmpty) continue;
+      if (current.world.situations.isEmpty) {
+        // Leaf node of the graph. Make sure to score the world here, too.
+        var score = current.world.actors
+            .singleWhere((a) => a.id == actorId)
+            .scoreWorld(current.world);
+        yield new ConsequenceStats(
+            score, current.cumulativeProbability, current.order);
+        continue;
+      }
 
       var currentActor =
           current.world.currentSituation.state.getCurrentActor(current.world);
@@ -203,11 +210,12 @@ class ActorPlanner {
       }
 
       // DEBUG TODO: remove
-      if (DEBUG && (firstAction as EnemyTargetAction).name.contains("Kick")) {
+      if (DEBUG && (firstAction as EnemyTargetAction).name.contains(" ")) {
         var score = mainActor.scoreWorld(current.world);
         print("----");
         print(
             "SITUATION = ${current.world.currentSituation.state.runtimeType}");
+        print("MAIN_ACTOR = ${mainActor.name}");
         print("ACTOR = ${currentActor.name} ($currentActorIsMain)");
         print(
             "score=${score - initialScore} * cumProb=${current.cumulativeProbability} "
@@ -283,6 +291,10 @@ class PlannerRecommendation {
 
     num minimum = scores.values.fold(double.INFINITY, math.min);
     num maximum = scores.values.fold(double.NEGATIVE_INFINITY, math.max);
+    assert(!minimum.isNaN);
+    assert(!maximum.isNaN);
+    assert(minimum.isFinite);
+    assert(maximum.isFinite);
 
     // Make sure even the worst option has some weight.
     num lowerBound = minimum - (maximum - minimum) * _worstOptionWeight;
