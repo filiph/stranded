@@ -8,6 +8,7 @@ import 'package:stranded/actor.dart';
 import 'package:stranded/situation.dart';
 import 'package:stranded/util/alternate_iterables.dart';
 import 'package:stranded/world.dart';
+import 'package:stranded/storyline/storyline.dart';
 
 part 'fight_situation.g.dart';
 
@@ -17,6 +18,7 @@ abstract class FightSituation extends SituationState
   int get time;
   BuiltList<int> get playerTeamIds;
   BuiltList<int> get enemyTeamIds;
+  BuiltMap<int, TimedEventCallback> get events;
 
   FightSituation._();
   factory FightSituation([updates(FightSituationBuilder b)]) = _$FightSituation;
@@ -32,6 +34,16 @@ abstract class FightSituation extends SituationState
     return canFight(playerTeamIds) &&
         canFight(enemyTeamIds) &&
         playerTeamIds.any(isPlayerAndAlive);
+  }
+
+  // We're using [onBeforeAction] because when using onAfterAction, we'd report
+  // timed events at a time when an action in FightSituation might have
+  // created other (child) situations.
+  @override
+  void onBeforeAction(WorldState world, Storyline s) {
+    if (events.containsKey(time)) {
+      events[time](world, s);
+    }
   }
 
   @override
@@ -61,7 +73,11 @@ abstract class FightSituationBuilder
   int time = 0;
   BuiltList<int> playerTeamIds;
   BuiltList<int> enemyTeamIds;
+  MapBuilder<int, TimedEventCallback> events =
+      new MapBuilder<int, TimedEventCallback>();
 
   FightSituationBuilder._();
   factory FightSituationBuilder() = _$FightSituationBuilder;
 }
+
+typedef void TimedEventCallback(WorldState world, Storyline storyline);

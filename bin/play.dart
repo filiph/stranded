@@ -20,6 +20,7 @@ import 'src/fight/dodge_slash.dart';
 import 'src/fight/parry_slash.dart';
 import 'src/fight/off_balance_opportunity_thrust.dart';
 import 'src/fight/pass.dart';
+import 'src/fight/off_balance_opportunity_push.dart';
 
 main() {
   var filip = new Actor((b) => b
@@ -58,7 +59,18 @@ main() {
 
   var initialSituation = new Situation.withState(new FightSituation((b) => b
     ..playerTeamIds = new BuiltList<int>([filip.id, briana.id])
-    ..enemyTeamIds = new BuiltList<int>([orc.id, goblin.id])));
+    ..enemyTeamIds = new BuiltList<int>([orc.id, goblin.id])
+    ..events[2] = (w, s) {
+      s.addParagraph();
+      s.add("You hear a horrible growling sound from behind.");
+      s.add("The worm must be near.");
+      s.addParagraph();
+    }
+    ..events[6] = (w, s) {
+      s.addParagraph();
+      s.add("The earth shatters and there's that sound again.");
+      s.addParagraph();
+    }));
 
   WorldState world = new WorldState(
       new Set.from([filip, briana, orc, goblin]), initialSituation);
@@ -103,7 +115,6 @@ main() {
       selected = recs.actions[Randomly.chooseWeightedPrecise(recs.weights,
           max: PlannerRecommendation.weightsResolution)];
     }
-//    print("${actor.name} selects $selected");
     var consequences = selected.apply(actor, consequence, world).toList();
     int index = Randomly
         .chooseWeighted(consequences.map/*<num>*/((c) => c.probability));
@@ -113,7 +124,7 @@ main() {
   }
   print(storyline.toString());
 
-  if (filip.isAlive) {
+  if (world.getActorById(filip.id).isAlive) {
     print("You start sprinting again.");
   } else {
     print("You will soon be the giant worm's food.");

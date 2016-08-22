@@ -8,7 +8,7 @@ import 'package:stranded/world.dart';
 import 'fight_situation.dart';
 import 'slash_situation.dart';
 
-var slashWithSword = new EnemyTargetActionGenerator("slash <object>",
+var slashWithSword = new EnemyTargetActionGenerator("swing at <object>",
     valid: (Actor a, enemy, w) =>
         w.currentSituation.state is FightSituation && a.wields(ItemType.SWORD),
     chance: 1.0, success: (a, enemy, WorldState w, Storyline s) {

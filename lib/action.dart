@@ -65,13 +65,20 @@ abstract class ActorAction {
         worldCopy.actors.singleWhere((a) => a.id == actor.id);
     var builder = _prepareWorldRecord(actor, world);
     // Remember situation as it can be changed during applySuccess.
-    var situationId = worldCopy.currentSituation.id;
     var storyline = new Storyline();
+    var situationId = worldCopy.currentSituation.id;
+    int hashCode = worldCopy.hashCode;
+    worldCopy.currentSituation.onBeforeAction(worldCopy, storyline);
+    if (worldCopy.hashCode != hashCode) {
+      throw new StateError("Please don't change the world in onBeforeAction");
+    }
     _description = applyFunction(actorInWorldCopy, worldCopy, storyline);
     worldCopy.updateSituationById(
         situationId, (b) => b.state = b.state.elapseTime());
     worldCopy.elapseTime();
-    worldCopy.getSituationById(situationId)?.onAfterAction(worldCopy);
+    worldCopy
+        .getSituationById(situationId)
+        ?.onAfterAction(worldCopy, storyline);
 
     // Remove ended situations: the ones that don't return an actor anymore,
     // and the ones that return shouldContinue(world) == true.

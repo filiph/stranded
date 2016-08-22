@@ -100,13 +100,15 @@ abstract class EntityBehavior {
       {Entity object,
       bool positive: false,
       bool negative: false,
-      bool but: false}) {
+      bool but: false,
+      bool endSentence: false}) {
     storyline.add(text,
         subject: this as Entity,
         object: object,
         positive: positive,
         negative: negative,
-        but: but);
+        but: but,
+        endSentence: endSentence);
   }
 }
 

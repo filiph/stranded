@@ -37,8 +37,12 @@ abstract class OffBalanceOpportunitySituation extends SituationState
         ..time = time);
 
   @override
-  void onAfterAction(WorldState world) {
-    world.updateActorById(actorId, (b) => b..pose = Pose.standing);
+  void onAfterAction(WorldState world, _) {
+    world.updateActorById(actorId, (b) {
+      if (b.pose == Pose.offBalance) {
+        b.pose = Pose.standing;
+      }
+    });
   }
 
   @override

@@ -10,11 +10,14 @@ var offBalanceOpportunityThrust = new EnemyTargetActionGenerator(
     "stab <object>",
     valid: (Actor a, enemy, WorldState w) =>
         w.currentSituation.state is OffBalanceOpportunitySituation &&
+        a.pose == Pose.standing &&
         enemy.pose == Pose.offBalance &&
         a.wields(ItemType.SWORD),
     chance: 0.6, success: (a, enemy, WorldState w, Storyline s) {
-  a.report(s, "<subject> stab<s> <object>", object: enemy, positive: true);
-  enemy.report(s, "<subject> collapse<s>", negative: true);
+  a.report(s, "<subject> {stab<s>|run<s> <subject's> sword through} <object>",
+      object: enemy, positive: true);
+  enemy.report(s, "<subject> collapse<s>, dead",
+      negative: true, endSentence: true);
   s.addParagraph();
   w.updateActorById(enemy.id, (b) => b.isAlive = false);
   return "${a.name} stabs ${enemy.name}";

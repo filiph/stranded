@@ -13,10 +13,15 @@ var dodgeSlash = new EnemyTargetActionGenerator("dodge it",
   return "${a.name} dodges ${enemy.name}";
 }, failure: (Actor a, Actor enemy, WorldState w, Storyline s) {
   a.report(s, "<subject> tr<ies> to dodge");
-  enemy.report(s, "<subject> slash<es> <object>",
-      object: a, but: true, positive: true);
-  a.report(s, "<subject> fall<s> to the ground", negative: true);
-  a.report(s, "<subject> die<s>", negative: true);
+  enemy.report(
+      s,
+      "<subject> {slash<es>|cut<s>} {across|through} <object's> "
+      "{neck|abdomen|lower body}",
+      object: a,
+      but: true,
+      positive: true);
+  a.report(s, "<subject> fall<s> to the ground, dead",
+      negative: true, endSentence: true);
   s.addParagraph();
   w.updateActorById(a.id, (b) => b.isAlive = false);
   return "${a.name} fails to dodge ${enemy.name}";

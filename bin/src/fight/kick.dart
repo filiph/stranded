@@ -7,7 +7,7 @@ import 'package:stranded/storyline/storyline.dart';
 import 'off_balance_opportunity_situation.dart';
 import 'fight_situation.dart';
 
-var kickOffBalance = new EnemyTargetActionGenerator("kick <object> off balance",
+var kickOffBalance = new EnemyTargetActionGenerator("kick <object>",
     valid: (Actor a, enemy, w) =>
         w.currentSituation.state is FightSituation &&
         a.pose == Pose.standing &&

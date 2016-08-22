@@ -6,6 +6,7 @@ import 'package:built_value/built_value.dart';
 
 import 'actor.dart';
 import 'world.dart';
+import 'package:stranded/storyline/storyline.dart';
 
 part 'situation.g.dart';
 
@@ -38,8 +39,12 @@ abstract class Situation implements Built<Situation, SituationBuilder> {
   factory Situation.withState(SituationState state) =>
       new Situation((b) => b.state = state);
 
-  void onAfterAction(WorldState world) {
-    state.onAfterAction(world);
+  void onBeforeAction(WorldState world, Storyline storyline) {
+    state.onBeforeAction(world, storyline);
+  }
+
+  void onAfterAction(WorldState world, Storyline storyline) {
+    state.onAfterAction(world, storyline);
   }
 
   // TODO: toMap (save [time] as well as currentActor (because we want to make
@@ -66,7 +71,15 @@ abstract class SituationState {
   /// Returns the actor whose turn it is at specified [time].
   Actor getActorAtTime(int time, WorldState world);
 
-  void onAfterAction(WorldState world) {
+  /// Called just before executing an action.
+  ///
+  /// This should NOT modify the world. This is only for adding to the
+  /// [storyline].
+  void onBeforeAction(WorldState world, Storyline storyline) {
+    // No-op by default.
+  }
+
+  void onAfterAction(WorldState world, Storyline storyline) {
     // No-op by default.
   }
 
