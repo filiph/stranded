@@ -105,6 +105,7 @@ abstract class EntityBehavior {
 
   void report(Storyline storyline, String text,
       {Entity object,
+      Entity objectOwner,
       bool positive: false,
       bool negative: false,
       bool but: false,
@@ -112,6 +113,7 @@ abstract class EntityBehavior {
     storyline.add(text,
         subject: this as Entity,
         object: object,
+        objectOwner: objectOwner,
         positive: positive,
         negative: negative,
         but: but,

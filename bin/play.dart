@@ -27,7 +27,7 @@ main() {
     ..id = 100
     ..pronoun = Pronoun.SHE
     ..name = "Briana"
-    ..currentWeapon = new Sword());
+    ..currentWeapon = new Sword("longsword"));
 //  var brant = new Actor((b) => b
 //    ..id = 500
 //    ..pronoun = Pronoun.HE
@@ -39,7 +39,7 @@ main() {
     ..name = "orc"
     ..nameIsProperNoun = false
     ..pronoun = Pronoun.HE
-    ..currentWeapon = new Sword()
+    ..currentWeapon = new Sword("scimitar")
     ..team = defaultEnemyTeam);
 
   var goblin = new Actor((b) => b

@@ -61,7 +61,7 @@ abstract class Item<T extends Item> extends Object with EntityBehavior implement
 }
 
 class Sword extends Item {
-  Sword() : super(ItemType.SWORD);
+  Sword([this.name = "sword"]) : super(ItemType.SWORD);
 
   Sword copy() => new Sword();
 
@@ -77,31 +77,23 @@ class Sword extends Item {
   @override
   Team team = neutralTeam;
 
-  // TODO: implement categories
   @override
   List<String> get categories => const [];
 
-  // TODO: implement id
   @override
   int get id => hashCode;
 
-  // TODO: implement isAlive
   @override
   bool get isAlive => false;
 
-  // TODO: implement isPlayer
   @override
   bool get isPlayer => false;
 
-  // TODO: implement name
-  @override
-  String get name => "sword";
+  final String name;
 
-  // TODO: implement nameIsProperNoun
   @override
   bool get nameIsProperNoun => false;
 
-  // TODO: implement pronoun
   @override
   Pronoun get pronoun => Pronoun.IT;
 }

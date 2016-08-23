@@ -15,7 +15,10 @@ var startSlash = new EnemyTargetActionGenerator("swing at <object>",
         enemy.pose != Pose.onGround &&
         a.wields(ItemType.SWORD),
     chance: 1.0, success: (a, enemy, WorldState w, Storyline s) {
-  a.report(s, "<subject> swing<s> {<subject's> sword |}at <object>",
+  a.report(
+      s,
+      "<subject> swing<s> "
+      "{<subject's> ${a.currentWeapon.name} |}at <object>",
       object: enemy);
   var slashSituation =
       new Situation.withState(new SlashSituation.withValues(a, enemy));

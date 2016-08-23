@@ -12,7 +12,10 @@ var slashGroundedEnemy = new EnemyTargetActionGenerator("swing at <object>",
     valid: (Actor a, enemy, w) =>
         enemy.pose == Pose.onGround && a.wields(ItemType.SWORD),
     chance: 0.8, success: (a, enemy, WorldState w, Storyline s) {
-  a.report(s, "<subject> swing<s> {<subject's> sword |}at <object>",
+  a.report(
+      s,
+      "<subject> swing<s> "
+      "{<subject's> ${a.currentWeapon.name} |}at <object>",
       object: enemy);
   enemy.report(s, "<subject> can't roll out of the way");
   s.add("<subject> {cuts|slashes|slits} <object's> {throat|neck|side}",
@@ -21,7 +24,10 @@ var slashGroundedEnemy = new EnemyTargetActionGenerator("swing at <object>",
   w.updateActorById(enemy.id, (b) => b..isAlive = false);
   return "${a.name} kills ${enemy.name} on the ground";
 }, failure: (a, enemy, w, s) {
-  a.report(s, "<subject> swing<s> {<subject's> sword |}at <object>",
+  a.report(
+      s,
+      "<subject> swing<s> "
+      "{<subject's> ${a.currentWeapon.name} |}at <object>",
       object: enemy);
   enemy.report(s, "<subject> <is> able to roll out of the way", but: true);
   return "${a.name} fails to kill ${enemy.name} on the ground";
