@@ -12,6 +12,7 @@ import 'package:stranded/storyline/storyline.dart';
 import 'package:stranded/action.dart';
 import 'kick.dart';
 import 'slash.dart';
+import 'regain_balance.dart';
 
 part 'fight_situation.g.dart';
 
@@ -26,6 +27,7 @@ abstract class FightSituation extends SituationState
   FightSituation._();
   factory FightSituation([updates(FightSituationBuilder b)]) = _$FightSituation;
 
+  get actions => [regainBalance];
   List<ActionGenerator> get actionGenerators =>
       [kickOffBalance, startSlash];
 

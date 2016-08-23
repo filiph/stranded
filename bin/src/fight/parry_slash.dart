@@ -9,13 +9,20 @@ import 'slash_situation.dart';
 var parrySlash = new EnemyTargetActionGenerator("parry it",
     valid: (Actor a, enemy, WorldState w) => a.wields(ItemType.SWORD),
     chance: 0.6, success: (a, enemy, WorldState w, Storyline s) {
-  a.report(s, "<subject> {parr<ies> it|meet<s> it with <subject's> sword}",
-      object: enemy, positive: true);
+  a.report(
+      s,
+      "<subject> {parr<ies> it|"
+      "meet<s> it with <subject's> sword|"
+      "fend<s> it off}",
+      object: enemy,
+      positive: true);
   w.popSituation();
   w.popSituation();
   return "${a.name} parries ${enemy.name}";
 }, failure: (Actor a, Actor enemy, WorldState w, Storyline s) {
-  a.report(s, "<subject> tr<ies> to {parry|meet it with <subject's> sword}");
+  a.report(s, "<subject> tr<ies> to {parry|"
+      "meet it with <subject's> sword|"
+      "fend it off}");
   a.report(s, "<subject> {fail<s>|<does>n't succeed}", but: true);
   return "${a.name} fails to dodge ${enemy.name}";
 });

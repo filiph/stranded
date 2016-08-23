@@ -325,14 +325,17 @@ class Storyline {
   }
 
   /// taking care of all the exceptions and rules when comparing different reports
-  /// call: [: same('subject', i, i+1) ... :]
-  bool same(String key, int i, int j) {
+  /// call: [: sameSubject(i, i+1) ... :]
+  bool _sameSubject(int i, int j) {
     if (!valid(i) || !valid(j)) return false;
-    if (reports[i][key] == null || reports[j][key] == null) return false;
-    if (reports[i][key] == reports[j][key])
-      return true;
-    else
-      return false;
+    if (reports[i].subject == null || reports[j].subject == null) return false;
+    return reports[i].subject.id == reports[j].subject.id;
+  }
+
+  bool _sameObject(int i, int j) {
+    if (!valid(i) || !valid(j)) return false;
+    if (reports[i].object == null || reports[j].object == null) return false;
+    return reports[i].object.id == reports[j].object.id;
   }
 
   bool exchanged(String key1, String key2, int i, int j) {
@@ -361,7 +364,7 @@ class Storyline {
       if (reports[i].positive && reports[j].negative) return true;
       if (reports[i].negative && reports[j].positive) return true;
     }
-    if (!same('subject', i, j)) return false;
+    if (!_sameSubject(i, j)) return false;
     if (reports[i].positive && reports[j].positive) return true;
     if (reports[i].negative && reports[j].negative)
       return true;
@@ -394,7 +397,7 @@ class Storyline {
   String substitute(int i, String str,
       {bool useSubjectPronoun: false, bool useObjectPronoun: false}) {
     String result = str.replaceAll(ACTION, string(i));
-    if ((useObjectPronoun || same('object', i, i - 1)) &&
+    if ((useObjectPronoun || _sameObject(i, i - 1)) &&
         !(object(i).pronoun == Pronoun.IT &&
             subject(i).pronoun == Pronoun.IT)) {
       // if doing something to someone in succession, use pronoun
@@ -409,7 +412,7 @@ class Storyline {
       result = result.replaceAll(OBJECT, object(i).pronoun.accusative);
       result = result.replaceAll(OBJECT_POSSESIVE, object(i).pronoun.genitive);
     }
-    if (useSubjectPronoun || same('subject', i, i - 1)) {
+    if (useSubjectPronoun || _sameSubject(i, i - 1)) {
       // Never show "the guard's it".
       result = result.replaceAll(
           "$OWNER_POSSESIVE $SUBJECT", subject(i).pronoun.nominative);
@@ -666,7 +669,7 @@ class Storyline {
             reports[i].startSentence ||
             reports[i - 1].endSentence ||
             reports[i].wholeSentence ||
-            !(same('subject', i, i - 1) || objectSubjectSwitch) ||
+            !(_sameSubject(i, i - 1) || objectSubjectSwitch) ||
             (but && (i - lastEndSentence > 1)) ||
             (but && reports[i - 1].but) ||
             (timeSincePrevious(i) > SHORT_TIME);
@@ -686,7 +689,7 @@ class Storyline {
                 Randomly.choose([" but ", " but ", /*" yet ",*/ ", but " ]));
             if (!sameSentiment(i, i + 1)) endThisSentence = true;
           } else {
-            if (same('subject', i, i - 1) &&
+            if (_sameSubject(i, i - 1) &&
                 string(i).startsWith("$SUBJECT ") &&
                 i < length - 1 &&
                 i - lastEndSentence < MAX_SENTENCE_LENGTH - 1 &&
@@ -703,7 +706,7 @@ class Storyline {
 
       String report = string(i);
       // clear subjects when e.g. "Wolf hits you, it growls, it strikes again."
-      if (!endPreviousSentence) if (same('subject', i, i - 1)) if (string(i - 1)
+      if (!endPreviousSentence) if (_sameSubject(i, i - 1)) if (string(i - 1)
           .startsWith("$SUBJECT ")) if (report.startsWith("$SUBJECT "))
         report = report.replaceFirst("$SUBJECT ", "");
 

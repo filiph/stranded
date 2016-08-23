@@ -20,6 +20,7 @@ typedef String _ActorActionFunction(
 //typedef void ActorActionFunction(Actor actor, WorldState worldCopy, Storyline story);
 
 abstract class ActorAction {
+  String get name;
   String _description;
 
   Iterable<PlanConsequence> apply(
@@ -107,6 +108,7 @@ abstract class ActorAction {
 
   ActionRecordBuilder _prepareWorldRecord(Actor actor, WorldState world) =>
       new ActionRecordBuilder()
+        ..actionName = name
         ..protagonist = actor
         ..markBeforeAction(world);
 
@@ -117,6 +119,7 @@ abstract class ActorAction {
     }
     builder.markAfterAction(world);
     builder.description = _description;
+    builder.time = world.time;
     world.actionRecords.add(builder.build());
   }
 }
@@ -144,7 +147,7 @@ class ClosureActorAction extends ActorAction {
   bool isApplicable(Actor actor, WorldState world) =>
       _isApplicable(actor, world);
 
-  toString() => "ClosureActorAction<$name>";
+  toString() => name;
 }
 
 /// Builder generates multiple [ActorAction] instances given a [world] and

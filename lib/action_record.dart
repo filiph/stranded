@@ -4,8 +4,6 @@ import 'package:quiver/core.dart';
 import 'package:stranded/actor.dart';
 import 'package:stranded/world.dart';
 
-
-
 int _extractId(Actor actor) => actor.id;
 
 /// A record of some event action that transpired.
@@ -27,6 +25,8 @@ int _extractId(Actor actor) => actor.id;
 ///   person is responsible for
 class ActionRecord {
   final String description;
+
+  final String actionName;
 
   final int time;
 
@@ -57,10 +57,11 @@ class ActionRecord {
   /// their identity, not their state at the time of action.
   final ActorMap<num> scoreChange;
 
-  ActionRecord(int time, String description, Actor protagonist,
-      Iterable<Actor> knownTo, ActorMap<num> scoreChanges)
+  ActionRecord(int time, String actionName, String description,
+      Actor protagonist, Iterable<Actor> knownTo, ActorMap<num> scoreChanges)
       : this._(
             time,
+            actionName,
             description,
             protagonist.id,
             knownTo.map(_extractId).toSet(),
@@ -69,13 +70,14 @@ class ActionRecord {
   ActionRecord.duplicate(ActionRecord other)
       : this._(
             other.time,
+            other.actionName,
             other.description,
             other.protagonist,
             new Set<int>.from(other.knownTo),
             new ActorMap<num>.from(other.scoreChange));
 
-  ActionRecord._(this.time, this.description, this.protagonist, this.knownTo,
-      this.scoreChange);
+  ActionRecord._(this.time, this.actionName, this.description, this.protagonist,
+      this.knownTo, this.scoreChange);
 
   @override
   int get hashCode {
@@ -90,7 +92,7 @@ class ActionRecord {
 
   bool operator ==(o) => o is ActionRecord && hashCode == o.hashCode;
 
-  String toString() => "ActionRecord<$description, $protagonist>";
+  String toString() => "ActionRecord<$actionName, $description>";
 }
 
 class ActionRecordBuilder {
@@ -106,6 +108,9 @@ class ActionRecordBuilder {
     _description = value;
   }
 
+  String actionName;
+  int time = null;
+
   KnownToMode get knownToMode => _knownToMode;
   set knownToMode(KnownToMode value) {
     _knownToMode = value;
@@ -117,6 +122,7 @@ class ActionRecordBuilder {
   }
 
   ActionRecord build() {
+    assert(actionName != null);
     assert(_protagonist != null);
     assert(_actorScoresBefore != null);
     assert(_knownToMode != null);
@@ -143,8 +149,7 @@ class ActionRecordBuilder {
           actor.scoreWorld(_afterWorld) - _actorScoresBefore[actor];
     }
 
-    // TODO: get time from world
-    return new ActionRecord._(null, _description, _protagonist.id,
+    return new ActionRecord._(time, actionName, _description, _protagonist.id,
         knownTo.map(_extractId).toSet(), scoreChanges);
   }
 

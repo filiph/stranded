@@ -34,6 +34,7 @@ abstract class Actor extends Object
 
   /// Names can change or can even be duplicate. [id] is the only safe way
   /// to find out if we're talking about the same actor.
+  @override
   int get id;
 
   /// The higher the initiative, the sooner this actor will act each turn.

@@ -7,6 +7,7 @@ import 'package:stranded/actor.dart';
 import 'package:quiver/core.dart';
 import 'package:stranded/world.dart';
 import 'off_balance_opportunity_thrust.dart';
+import 'pass.dart';
 
 part 'off_balance_opportunity_situation.g.dart';
 
@@ -36,16 +37,8 @@ abstract class OffBalanceOpportunitySituation extends SituationState
         ..actorId = actor.id
         ..time = time);
 
+  get actions => [pass];
   get actionGenerators => [offBalanceOpportunityThrust];
-
-  @override
-  void onAfterAction(WorldState world, _) {
-    world.updateActorById(actorId, (b) {
-      if (b.pose == Pose.offBalance) {
-        b.pose = Pose.standing;
-      }
-    });
-  }
 
   @override
   Actor getActorAtTime(int time, WorldState world) {

@@ -14,6 +14,13 @@ class Entity extends Object with EntityBehavior {
   /// nothing/nobody).
   static final Entity NOTHING = new Entity(name: "__NOTHING__");
 
+  /// An entity's [id] is the only constant thing. All other things, including
+  /// [name] can change during play. ID cannot.
+  ///
+  /// By default, id is the same as hashCode. But for classes that override
+  /// hashCode (for example, immutable ones), this should be overridden.
+  int get id => hashCode;
+
   /// A proper noun of an entity is a unique name: like "John" for a character
   /// or "Sun" for our star, or "Painless" for the gun in the movie Predator.
   /// http://en.wikipedia.org/wiki/Proper_noun
