@@ -7,6 +7,7 @@ import 'package:stranded/action.dart';
 import 'package:stranded/actor.dart';
 import 'package:stranded/plan_consequence.dart';
 import 'package:stranded/world.dart';
+import 'dart:async';
 
 class ActorPlanner {
   /// We will stop processing a plan path once its leaf node has lower
@@ -60,7 +61,7 @@ class ActorPlanner {
     }
   }
 
-  void plan({int maxOrder: 3}) {
+  Future<Null> plan({int maxOrder: 3, Future<Null> waitFunction()}) async {
     firstActionScores.clear();
 
     var currentActor =
@@ -72,8 +73,9 @@ class ActorPlanner {
         // Bail early if action isn't possible at all.
         continue;
       }
-      var consequenceStats = _getConsequenceStats(_initial, action, maxOrder)
-          .toList(growable: false);
+      var consequenceStats =
+          await _getConsequenceStats(_initial, action, maxOrder, waitFunction)
+              .toList();
 
       if (consequenceStats.isEmpty) {
         // This action is possible but we couldn't get to any outcomes while
@@ -143,10 +145,15 @@ class ActorPlanner {
     return result;
   }
 
+  static DateTime _latestWait = new DateTime.now();
+
   /// Returns the stats for consequences of a given [initial] state after
   /// applying [firstAction] and then up to [maxOrder] other steps.
-  Iterable<ConsequenceStats> _getConsequenceStats(
-      PlanConsequence initial, ActorAction firstAction, int maxOrder) sync* {
+  Stream<ConsequenceStats> _getConsequenceStats(
+      PlanConsequence initial,
+      ActorAction firstAction,
+      int maxOrder,
+      Future<Null> waitFunction()) async* {
     // Actor object changes during planning, so we need to look up via id.
     var mainActor = initial.world.actors.singleWhere((a) => a.id == actorId);
 
@@ -181,6 +188,12 @@ class ActorPlanner {
     }
 
     while (open.isNotEmpty) {
+      if (waitFunction != null &&
+          new DateTime.now().difference(_latestWait) >
+              const Duration(milliseconds: 15)) {
+        await waitFunction();
+        _latestWait = new DateTime.now();
+      }
       var current = open.removeFirst();
 
       if (current.order >= maxOrder) break;

@@ -1,4 +1,5 @@
 import 'package:stranded/storyline/storyline.dart';
+import 'dart:async';
 
 /**
  * LoopedEvent is any event that gets executed in a loop, waiting for
@@ -10,12 +11,12 @@ import 'package:stranded/storyline/storyline.dart';
  */
 
 abstract class LoopedEvent /*TODO: implements Saveable ?*/ {
-  LoopedEvent(this._echo, this._goto, this._choices, this._choiceFunction) {
+  LoopedEvent(this.echo, this._goto, this._choices, this.choiceFunction) {
   }
 
   final StringTakingVoidFunction _goto;
-  final StringTakingVoidFunction _echo;
-  final ChoiceFunction _choiceFunction;
+  final StringTakingVoidFunction echo;
+  final ChoiceFunction choiceFunction;
   final dynamic _choices;
 
   bool finished = false;
@@ -23,13 +24,13 @@ abstract class LoopedEvent /*TODO: implements Saveable ?*/ {
   /// The page to jump to when combat is finished.
   String onFinishedGoto;
 
-  void update(Storyline storyline, ChoiceFunction _choiceFunction);
+  Future<Null> update();
 
   /**
    * Runs the update loop until user interaction is needed or until LoopedEvent
    * is finished.
    */
-  void run() {
+  Future<Null> run() async {
     if (onFinishedGoto == null) throw new StateError("Cannot run a LoopedEvent "
         "before onFinishedGoto is defined.");
     if (finished) {
@@ -38,11 +39,9 @@ abstract class LoopedEvent /*TODO: implements Saveable ?*/ {
       return;
     }
 
-    var storyline = new Storyline();
     while (!finished && _choices.isEmpty) {
-      update(storyline, this._choiceFunction);
+      await update();
     }
-    _echo(storyline.toString());
   }
 }
 
