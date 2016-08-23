@@ -84,6 +84,13 @@ main() {
     var planner = new ActorPlanner(actor, world);
     planner.plan(maxOrder: 7);
     var recs = planner.getRecommendations();
+    if (recs.isEmpty) {
+      // Hacky. Not sure this will work. Try to always have some action to do.
+      world.updateSituationById(
+          situation.id, (b) => b.state = b.state.elapseTime());
+      world.time += 1;
+      continue;
+    }
 
     ActorAction selected;
     if (actor.isPlayer) {
@@ -99,7 +106,6 @@ main() {
         int option = int.parse(stdin.readLineSync());
         selected = planner.firstActionScores.keys.toList()[option];
       }
-
     } else {
       selected = recs.actions[Randomly.chooseWeightedPrecise(recs.weights,
           max: PlannerRecommendation.weightsResolution)];

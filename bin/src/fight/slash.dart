@@ -11,7 +11,9 @@ import 'slash_defense_situation.dart';
 
 var startSlash = new EnemyTargetActionGenerator("swing at <object>",
     valid: (Actor a, enemy, w) =>
-        a.pose == Pose.standing && a.wields(ItemType.SWORD),
+        a.pose == Pose.standing &&
+        enemy.pose != Pose.onGround &&
+        a.wields(ItemType.SWORD),
     chance: 1.0, success: (a, enemy, WorldState w, Storyline s) {
   a.report(s, "<subject> swing<s> {<subject's> sword |}at <object>",
       object: enemy);

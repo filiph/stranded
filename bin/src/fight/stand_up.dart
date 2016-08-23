@@ -4,6 +4,9 @@ import 'package:stranded/world.dart';
 import 'package:stranded/storyline/storyline.dart';
 import 'off_balance_opportunity_situation.dart';
 
-var pass = new ClosureActorAction("Pass.", (_, __) => true, (a, w, s) {
-  return "${a.name} passes the opportunity";
+var standUp = new ClosureActorAction(
+    "Stand up.", (Actor a, w) => a.pose == Pose.onGround, (a, w, s) {
+  a.report(s, "<subject> stand<s> up");
+  w.updateActorById(a.id, (b) => b.pose = Pose.standing);
+  return "${a.name} stands up";
 }, (_, __, ___) {}, 1.0);

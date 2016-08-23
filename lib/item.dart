@@ -3,6 +3,8 @@ library stranded.item;
 import 'dart:math';
 
 import 'package:stranded/actor.dart';
+import 'package:stranded/storyline/storyline.dart';
+import 'package:stranded/team.dart';
 
 enum ItemType { SPEAR, BRANCH, TENT, SWORD }
 
@@ -23,11 +25,11 @@ String typeToDescription(ItemType type) {
 
 Random _random = new Random();
 
-abstract class Item<T extends Item> {
+abstract class Item<T extends Item> extends Object with EntityBehavior implements Entity {
   final ItemType type;
   String get description => typeToDescription(type);
 
-  const Item(this.type);
+  Item(this.type);
 
   /// Makes a copy of instance. To be overridden by subclasses.
   T copy();
@@ -58,32 +60,48 @@ abstract class Item<T extends Item> {
   }
 }
 
-class Branch extends Item<Branch> {
-  const Branch() : super(ItemType.BRANCH);
-
-  Branch copy() => new Branch();
-
-  final bool luxuryIsCumulative = false;
-  final num luxuryScore = 0;
-}
-
-class Tent extends Item<Tent> {
-  const Tent() : super(ItemType.TENT);
-
-  Tent copy() => new Tent();
-
-  final bool luxuryIsCumulative = false;
-  final num luxuryScore = 10;
-}
-
 class Sword extends Item {
-  const Sword() : super(ItemType.SWORD);
+  Sword() : super(ItemType.SWORD);
 
   Sword copy() => new Sword();
 
   final bool luxuryIsCumulative = false;
   final num luxuryScore = 10;
-}
 
-// trap
-// set of clothes
+  @override
+  bool alreadyMentioned = true;
+
+  @override
+  bool isActive = true;
+
+  @override
+  Team team = neutralTeam;
+
+  // TODO: implement categories
+  @override
+  List<String> get categories => const [];
+
+  // TODO: implement id
+  @override
+  int get id => hashCode;
+
+  // TODO: implement isAlive
+  @override
+  bool get isAlive => false;
+
+  // TODO: implement isPlayer
+  @override
+  bool get isPlayer => false;
+
+  // TODO: implement name
+  @override
+  String get name => "sword";
+
+  // TODO: implement nameIsProperNoun
+  @override
+  bool get nameIsProperNoun => false;
+
+  // TODO: implement pronoun
+  @override
+  Pronoun get pronoun => Pronoun.IT;
+}

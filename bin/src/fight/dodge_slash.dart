@@ -4,7 +4,7 @@ import 'package:stranded/world.dart';
 import 'package:stranded/storyline/storyline.dart';
 
 var dodgeSlash = new EnemyTargetActionGenerator("dodge it",
-    valid: (Actor a, enemy, WorldState w) => true,
+    valid: (Actor a, enemy, WorldState w) => a.pose != Pose.onGround,
     chance: 0.5, success: (a, enemy, WorldState w, Storyline s) {
   a.report(s, "<subject> {dodge<s>|sidestep<s>} it",
       object: enemy, positive: true);

@@ -20,6 +20,6 @@ var offBalanceOpportunityThrust = new EnemyTargetActionGenerator(
   return "${a.name} stabs ${enemy.name}";
 }, failure: (Actor a, Actor enemy, WorldState w, Storyline s) {
   a.report(s, "<subject> tr<ies> to stab <object>", object: enemy);
-  a.report(s, "<subject> {fail<s>|miss<es>}", but: true);
+  a.report(s, "<subject> {go<es> wide|fail<s>|miss<es>}", but: true);
   return "${a.name} fails to stab ${enemy.name}";
 });

@@ -13,6 +13,8 @@ import 'package:stranded/action.dart';
 import 'kick.dart';
 import 'slash.dart';
 import 'regain_balance.dart';
+import 'slash_grounded_enemy.dart';
+import 'stand_up.dart';
 
 part 'fight_situation.g.dart';
 
@@ -27,9 +29,9 @@ abstract class FightSituation extends SituationState
   FightSituation._();
   factory FightSituation([updates(FightSituationBuilder b)]) = _$FightSituation;
 
-  get actions => [regainBalance];
+  get actions => [regainBalance, standUp];
   List<ActionGenerator> get actionGenerators =>
-      [kickOffBalance, startSlash];
+      [kickOffBalance, startSlash, slashGroundedEnemy];
 
   @override
   bool shouldContinue(WorldState world) {

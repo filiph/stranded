@@ -174,6 +174,11 @@ class Storyline {
 
     time ??= this.time;
 
+    assert(subject != null || !str.contains("<subject"));
+    assert(object != null || !str.contains("<object"));
+    assert(owner != null || !str.contains("<owner"));
+    assert(objectOwner != null || !str.contains("<objectOwner"));
+
     if ((str.endsWith(".") || str.endsWith("!") || str.endsWith("?")) &&
         str.startsWith(new RegExp("[A-Z]"))) {
       wholeSentence = true;

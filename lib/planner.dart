@@ -272,12 +272,15 @@ class PlannerRecommendation {
 
   PlannerRecommendation(this.actions, this.weights) {
     assert(actions.length == weights.length);
-    assert(weights.fold(0, _sum) == weightsResolution);
+    assert(weights.length == 0 || weights.fold(0, _sum) == weightsResolution);
     // TODO: assert that it's a gradient from best to worst
   }
 
   factory PlannerRecommendation.fromScores(Map<ActorAction, num> scores) {
-    if (scores.isEmpty) throw new ArgumentError.value(scores);
+    if (scores.isEmpty) {
+      print("WARNING: no recommendations");
+      return new PlannerRecommendation([], []);
+    }
     var actions = scores.keys.toList();
     // Remove impossible actions. TODO: make sure we don't duplicate effort here
     actions.removeWhere((a) => scores[a] == double.NEGATIVE_INFINITY);
@@ -319,4 +322,6 @@ class PlannerRecommendation {
     weights[weights.length - 1] += weightsDifference;
     return new PlannerRecommendation(actions, weights);
   }
+
+  bool get isEmpty => actions.isEmpty;
 }
