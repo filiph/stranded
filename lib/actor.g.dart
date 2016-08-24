@@ -13,10 +13,10 @@ class _$Actor extends Actor {
   final Item currentWeapon;
   final Item shield;
   final Pose pose;
+  final int hitpoints;
   final int id;
   final int initiative;
   final bool isActive;
-  final bool isAlive;
   final bool isPlayer;
   final Set<Item> items;
   final String name;
@@ -29,10 +29,10 @@ class _$Actor extends Actor {
       this.currentWeapon,
       this.shield,
       this.pose,
+      this.hitpoints,
       this.id,
       this.initiative,
       this.isActive,
-      this.isAlive,
       this.isPlayer,
       this.items,
       this.name,
@@ -44,10 +44,10 @@ class _$Actor extends Actor {
       throw new ArgumentError('null alreadyMentioned');
     if (categories == null) throw new ArgumentError('null categories');
     if (pose == null) throw new ArgumentError('null pose');
+    if (hitpoints == null) throw new ArgumentError('null hitpoints');
     if (id == null) throw new ArgumentError('null id');
     if (initiative == null) throw new ArgumentError('null initiative');
     if (isActive == null) throw new ArgumentError('null isActive');
-    if (isAlive == null) throw new ArgumentError('null isAlive');
     if (isPlayer == null) throw new ArgumentError('null isPlayer');
     if (items == null) throw new ArgumentError('null items');
     if (name == null) throw new ArgumentError('null name');
@@ -68,10 +68,10 @@ class _$Actor extends Actor {
         currentWeapon == other.currentWeapon &&
         shield == other.shield &&
         pose == other.pose &&
+        hitpoints == other.hitpoints &&
         id == other.id &&
         initiative == other.initiative &&
         isActive == other.isActive &&
-        isAlive == other.isAlive &&
         isPlayer == other.isPlayer &&
         items == other.items &&
         name == other.name &&
@@ -87,10 +87,10 @@ class _$Actor extends Actor {
       currentWeapon,
       shield,
       pose,
+      hitpoints,
       id,
       initiative,
       isActive,
-      isAlive,
       isPlayer,
       items,
       name,
@@ -107,10 +107,10 @@ class _$Actor extends Actor {
         'currentWeapon=${currentWeapon.toString()}\n'
         'shield=${shield.toString()}\n'
         'pose=${pose.toString()}\n'
+        'hitpoints=${hitpoints.toString()}\n'
         'id=${id.toString()}\n'
         'initiative=${initiative.toString()}\n'
         'isActive=${isActive.toString()}\n'
-        'isAlive=${isAlive.toString()}\n'
         'isPlayer=${isPlayer.toString()}\n'
         'items=${items.toString()}\n'
         'name=${name.toString()}\n'
@@ -129,10 +129,10 @@ class _$ActorBuilder extends ActorBuilder {
     super.currentWeapon = other.currentWeapon;
     super.shield = other.shield;
     super.pose = other.pose;
+    super.hitpoints = other.hitpoints;
     super.id = other.id;
     super.initiative = other.initiative;
     super.isActive = other.isActive;
-    super.isAlive = other.isAlive;
     super.isPlayer = other.isPlayer;
     super.items = other.items;
     super.name = other.name;
@@ -150,10 +150,10 @@ class _$ActorBuilder extends ActorBuilder {
       throw new ArgumentError('null alreadyMentioned');
     if (categories == null) throw new ArgumentError('null categories');
     if (pose == null) throw new ArgumentError('null pose');
+    if (hitpoints == null) throw new ArgumentError('null hitpoints');
     if (id == null) throw new ArgumentError('null id');
     if (initiative == null) throw new ArgumentError('null initiative');
     if (isActive == null) throw new ArgumentError('null isActive');
-    if (isAlive == null) throw new ArgumentError('null isAlive');
     if (isPlayer == null) throw new ArgumentError('null isPlayer');
     if (items == null) throw new ArgumentError('null items');
     if (name == null) throw new ArgumentError('null name');
@@ -167,10 +167,10 @@ class _$ActorBuilder extends ActorBuilder {
         currentWeapon: currentWeapon,
         shield: shield,
         pose: pose,
+        hitpoints: hitpoints,
         id: id,
         initiative: initiative,
         isActive: isActive,
-        isAlive: isAlive,
         isPlayer: isPlayer,
         items: items,
         name: name,

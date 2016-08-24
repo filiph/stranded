@@ -32,6 +32,8 @@ abstract class Actor extends Object
 
   Pose get pose;
 
+  int get hitpoints;
+
   /// Names can change or can even be duplicate. [id] is the only safe way
   /// to find out if we're talking about the same actor.
   @override
@@ -47,7 +49,7 @@ abstract class Actor extends Object
 
   bool get isActive;
 
-  bool get isAlive;
+  bool get isAlive => hitpoints > 0;
 
   bool get isPlayer;
 
@@ -205,14 +207,15 @@ abstract class Actor extends Object
 
 //    return /*safety + */ gratitude + luxurySum;
     int score = 0;
-    if (isAlive) score += 10;
+    score += 10 * hitpoints;
 
-    var friends = world.actors.where((a) => a.team == team && a.isAlive).length;
-    score += friends * 2;
+    var friends = world.actors.where((a) => a.team == team);
+    score += friends.fold/*<int>*/(0, (sum, a) => sum + 2 * a.hitpoints);
 
-    var enemies =
-        world.actors.where((a) => a.isEnemyOf(this) && isAlive).length;
-    score -= enemies * 1;
+    var enemies = world.actors.where((a) => a.isEnemyOf(this));
+    score -= enemies.fold/*<int>*/(0, (sum, a) => sum + a.hitpoints);
+
+//    XXX START HERE - director scores down when repetitive
 
     return score;
   }
@@ -229,10 +232,10 @@ abstract class ActorBuilder implements Builder<Actor, ActorBuilder> {
   @nullable
   Item shield;
   Pose pose = Pose.standing;
+  int hitpoints = 1;
   int id;
   int initiative = 100;
   bool isActive = true;
-  bool isAlive = true;
   bool isPlayer = false;
   Set<Item> items = new Set();
   String name;
