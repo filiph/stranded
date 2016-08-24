@@ -279,6 +279,16 @@ void main() {
     expect(storyline.realize(), contains("has two paragraphs"));
   });
 
+  test("nice flow ('briana stands up, orc swings at her')", () {
+    var storyline = new Storyline();
+    var briana = new Entity(name: "Briana", nameIsProperNoun: true, pronoun: Pronoun.SHE);
+    var orc = new Entity(name: "orc", pronoun: Pronoun.HE);
+    storyline.add("<subject> stand<s> up", subject: briana);
+    storyline.add("<subject> swing<s> at <object>", subject: orc, object: briana);
+
+    expect(storyline.realize(), contains("swings at her"));
+  });
+
   test("enumeration", () {
     var storyline = new Storyline();
     Entity handkerchief = new Entity(name: "handkerchief");

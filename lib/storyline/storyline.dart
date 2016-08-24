@@ -436,7 +436,6 @@ class Storyline {
     // same as previous, but with object-subject reversed
     if (subject(i - 1) != null &&
         object(i) != null &&
-        subject(i - 1) != null &&
         subject(i - 1) == object(i) &&
         subject(i - 1).pronoun != subject(i).pronoun) {
       // Never show "the guard's it".
@@ -707,17 +706,9 @@ class Storyline {
                 Randomly.choose([" but ", " but ", /*" yet ",*/ ", but " ]));
             if (!sameSentiment(i, i + 1)) endThisSentence = true;
           } else {
-            if (_sameSubject(i, i - 1) &&
-                string(i).startsWith("$SUBJECT ") &&
-                i < length - 1 &&
-                i - lastEndSentence < MAX_SENTENCE_LENGTH - 1 &&
-                !(timeSincePrevious(i + 1) >
-                    SHORT_TIME) /* Makes the sentence end. TODO: check for all sentence ending logic. */) {
-              strBuf.write(", ");
-            } else {
-              strBuf.write(Randomly.choose([" and ", " and ", ", and "]));
-              endThisSentence = true;
-            }
+            // TODO: add ", " but only when we can be sure it's not in the end of the sentence
+            strBuf.write(Randomly.choose([" and ", " and ", ", and "]));
+            endThisSentence = true;
           }
         }
       }
