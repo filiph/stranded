@@ -129,6 +129,27 @@ class Randomly {
     }
   }
 
+  /// Randomly runs one of the provided functions.
+  static void run(void script1(), void script2(),
+      [void script3(), void script4()]) {
+    int count = script4 != null ? 4 : script3 != null ? 3 : 2;
+    int index = _random.nextInt(count);
+    switch (index) {
+      case 0:
+        script1();
+        break;
+      case 1:
+        script2();
+        break;
+      case 2:
+        script3();
+        break;
+      case 4:
+        script4();
+        break;
+    }
+  }
+
   /// Returns the probability in "rounded" by [precisionSteps]. So, if
   /// [precisionSteps] is [:10:], a [probability] of [:0.46:] becomes "50%".
   /// When [precisionSteps] is [:5:], then it becomes "45%".
