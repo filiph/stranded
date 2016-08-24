@@ -333,15 +333,12 @@ class Storyline {
     return reports[i].object.id == reports[j].object.id;
   }
 
-  bool exchanged(String key1, String key2, int i, int j) {
+  bool exchangedSubjectObject(int i, int j) {
     if (!valid(i) || !valid(j)) return false;
-    if (reports[i][key1] == null || reports[j][key1] == null) return false;
-    if (reports[i][key2] == null || reports[j][key2] == null) return false;
-    if (reports[i][key1] == reports[j][key2] &&
-        reports[i][key2] == reports[j][key1])
-      return true;
-    else
-      return false;
+    if (reports[i].subject == null || reports[j].subject == null) return false;
+    if (reports[i].object == null || reports[j].object == null) return false;
+    return reports[i].subject.id == reports[j].object.id &&
+        reports[i].object.id == reports[j].subject.id;
   }
 
   bool valid(int i) {
@@ -354,7 +351,7 @@ class Storyline {
   bool sameSentiment(int i, int j) {
     if (!valid(i) || !valid(j)) return false;
     // subject(i) == object(j), opposite sentiments => same sentiment
-    if (exchanged('subject', 'object', i, j) &&
+    if (exchangedSubjectObject(i, j) &&
         subject(i).isEnemyOf(subject(j))) {
       if (reports[i].positive && reports[j].negative) return true;
       if (reports[i].negative && reports[j].positive) return true;
@@ -370,7 +367,7 @@ class Storyline {
   bool oppositeSentiment(int i, int j) {
     if (!valid(i) || !valid(j)) return false;
     // subject(i) == object(j), both have same sentiment => opposite sentiment
-    if (exchanged('subject', 'object', i, j) &&
+    if (exchangedSubjectObject(i, j) &&
         subject(i).isEnemyOf(subject(j))) {
       if (reports[i].positive && reports[j].positive) return true;
       if (reports[i].negative && reports[j].negative) return true;
@@ -422,7 +419,7 @@ class Storyline {
     if (object(i - 1) != null &&
         subject(i) != null &&
         subject(i - 1) != null &&
-        object(i - 1) == subject(i) &&
+        object(i - 1).id == subject(i).id &&
         subject(i - 1).pronoun != subject(i).pronoun) {
       // Never show "the guard's it".
       result = result.replaceAll(
@@ -436,7 +433,7 @@ class Storyline {
     // same as previous, but with object-subject reversed
     if (subject(i - 1) != null &&
         object(i) != null &&
-        subject(i - 1) == object(i) &&
+        subject(i - 1).id == object(i).id &&
         subject(i - 1).pronoun != subject(i).pronoun) {
       // Never show "the guard's it".
       result = result.replaceAll(
@@ -678,7 +675,7 @@ class Storyline {
       // TODO: glue sentences together first (look ahead, optimize)
       if (i != 0) {
         // solve flow with previous sentence
-        bool objectSubjectSwitch = exchanged('subject', 'object', i - 1, i);
+        bool objectSubjectSwitch = exchangedSubjectObject(i - 1, i);
         but = (reports[i].but || oppositeSentiment(i, i - 1)) &&
             !reports[i - 1].but;
         reports[i].but = but;
@@ -687,6 +684,9 @@ class Storyline {
             reports[i].startSentence ||
             reports[i - 1].endSentence ||
             reports[i].wholeSentence ||
+            // TODO: add possibility to continue sentence even when
+            //       object-subject switch is partial (but the second object
+            //       must be something like an item)
             !(_sameSubject(i, i - 1) || objectSubjectSwitch) ||
             (but && (i - lastEndSentence > 1)) ||
             (but && reports[i - 1].but) ||
