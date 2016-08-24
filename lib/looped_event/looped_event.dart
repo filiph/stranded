@@ -11,13 +11,18 @@ import 'dart:async';
  */
 
 abstract class LoopedEvent /*TODO: implements Saveable ?*/ {
-  LoopedEvent(this.echo, this._goto, this._choices, this.choiceFunction) {
+  LoopedEvent(this._echo, this._goto, this._choices, this.choiceFunction) {
   }
 
   final StringTakingVoidFunction _goto;
-  final StringTakingVoidFunction echo;
+  final StringTakingVoidFunction _echo;
   final ChoiceFunction choiceFunction;
   final dynamic _choices;
+
+  final StringBuffer _strbuf = new StringBuffer();
+  void echo(String message) {
+    _strbuf.write(message);
+  }
 
   bool finished = false;
 
@@ -39,8 +44,12 @@ abstract class LoopedEvent /*TODO: implements Saveable ?*/ {
       return;
     }
 
-    while (!finished && _choices.isEmpty) {
+    while (!finished && _choices.isEmpty && _strbuf.isEmpty) {
       await update();
+    }
+    if (_strbuf.isNotEmpty) {
+      _echo(_strbuf.toString());
+      _strbuf.clear();
     }
   }
 }
