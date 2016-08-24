@@ -99,7 +99,7 @@ main() {
         // Only one option, select by default.
         selected = recs.actions.single;
       } else {
-        print(storyline.toString());
+        print(storyline.realize());
         storyline.clear();
 
         planner.generateTable().forEach(print);
@@ -117,7 +117,7 @@ main() {
     storyline.concatenate(consequence.storyline);
     world = consequence.world;
   }
-  print(storyline.toString());
+  print(storyline.realize());
 
   if (world.getActorById(filip.id).isAlive) {
     print("You start sprinting again.");

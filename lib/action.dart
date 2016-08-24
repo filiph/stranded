@@ -180,7 +180,7 @@ class EnemyTargetActionGenerator extends ActionGenerator {
     var enemies =
         situationActors.where((other) => other.team.isEnemyWith(actor.team));
     return enemies.map/*<ActorAction>*/((Actor enemy) => new EnemyTargetAction(
-        (new Storyline()..add(name, object: enemy)).toString(),
+        (new Storyline()..add(name, object: enemy)).realize(),
         enemy: enemy,
         valid: valid,
         success: success,

@@ -112,7 +112,6 @@ class Report {
  * Class for reporting a sequence of events in 'natural' language.
  */
 class Storyline {
-  final StringBuffer strBuf = new StringBuffer();
   final List<Report> reports = new List<Report>();
   int time = 0;
 
@@ -176,8 +175,6 @@ class Storyline {
 
     assert(subject != null || !str.contains("<subject"));
     assert(object != null || !str.contains("<object"));
-    assert(owner != null || !str.contains("<owner"));
-    assert(objectOwner != null || !str.contains("<objectOwner"));
 
     if ((str.endsWith(".") || str.endsWith("!") || str.endsWith("?")) &&
         str.startsWith(new RegExp("[A-Z]"))) {
@@ -202,13 +199,6 @@ class Storyline {
 
   /// Appends [other] storyline to this one.
   void concatenate(Storyline other) {
-    if (strBuf.isNotEmpty) {
-      // TODO: throw new StateError (after we rename .toString to something else)
-      print("Please only concatenate to clean storylines "
-          "(do not try to do this when some of the storyline is already "
-          "being outputted).");
-      strBuf.clear();
-    }
     reports.addAll(other.reports);
   }
 
@@ -630,12 +620,32 @@ class Storyline {
 
   void clear() {
     reports.clear();
-    strBuf.clear();
   }
 
+  bool get hasManyParagraphs =>
+      reports.any((r) => r.string == PARAGRAPH_NEWLINES);
+
+  void removeFirstParagraph() {
+    if (!hasManyParagraphs) {
+      reports.clear();
+      return;
+    }
+    reports.removeRange(
+        0,
+        reports.indexOf(
+                reports.firstWhere((r) => r.string == PARAGRAPH_NEWLINES)) +
+            1);
+  }
+
+  @deprecated
+  String toString() => realize();
+
   /// The main function that strings reports together into a coherent story.
-  String toString() {
-    reports.removeWhere((report) => report.string == "");
+  ///
+  /// When [onlyFirstParagraph] is `true`, this will only realize the first
+  /// paragraph and will leave the rest of the reports for later.
+  String realize({bool onlyFirstParagraph: false}) {
+    StringBuffer strBuf = new StringBuffer();
     List<Report> cleanedReports =
         reports.fold([], (List<Report> list, Report report) {
       Report previousReport = list.isNotEmpty ? list.last : null;
@@ -651,7 +661,11 @@ class Storyline {
       return list;
     });
     reports.retainWhere((Report report) => cleanedReports.contains(report));
-    final int length = reports.length;
+    final int length = onlyFirstParagraph && hasManyParagraphs
+        ? reports.indexOf(
+                reports.firstWhere((r) => r.string == PARAGRAPH_NEWLINES)) +
+            1
+        : reports.length;
     if (length < 1) return "";
     final int MAX_SENTENCE_LENGTH = 3;
     int lastEndSentence = -1;
@@ -685,8 +699,7 @@ class Storyline {
             strBuf.write(" ");
           else
             strBuf.write(". ");
-          if (but && !reports[i].wholeSentence)
-            strBuf.write("But ");
+          if (but && !reports[i].wholeSentence) strBuf.write("But ");
         } else {
           // let's try and glue [i-1] and [i] into one sentence
           if (but) {
