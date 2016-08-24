@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:build/build.dart';
 import 'package:built_value_generator/built_value_generator.dart';
 import 'phases.dart';
@@ -8,6 +6,6 @@ import 'phases.dart';
 ///
 /// Import the generators you want and pass them to [build] as shown,
 /// specifying which files in which packages you want to run against.
-Future main(List<String> args) async {
-  await build(phases, deleteFilesByDefault: true);
+main() {
+  watch(phases, deleteFilesByDefault: true);
 }
