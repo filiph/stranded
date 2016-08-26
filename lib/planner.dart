@@ -216,11 +216,9 @@ class ActorPlanner {
       assert(mainActor != null);
       bool currentActorIsMain = currentActor == mainActor;
 
-      if (currentActorIsMain) {
-        var score = mainActor.scoreWorld(current.world);
-        yield new ConsequenceStats(
-            score, current.cumulativeProbability, current.order);
-      }
+      var score = mainActor.scoreWorld(current.world);
+      yield new ConsequenceStats(
+          score, current.cumulativeProbability, current.order);
 
       // DEBUG TODO: remove
       if (DEBUG && (firstAction as EnemyTargetAction).name.contains(" ")) {
