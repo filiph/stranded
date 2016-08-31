@@ -73,6 +73,9 @@ abstract class Actor extends Object
 
   Team get team;
 
+  @nullable
+  WorldScoringFunction get worldScoringFunction;
+
   /// Computes gratitude towards [other] given the state of the [world].
   ///
   /// Goes through action records.
@@ -138,29 +141,8 @@ abstract class Actor extends Object
   ///
   /// They can share this information with others (or not).
   /// TODO: uncomment and implement
-//  final UnmodifiableSetView<LocationResource> knownResources;
+  //  final UnmodifiableSetView<LocationResource> knownResources;
 
-//  Actor(int id, String name, {int initiative, Team team, int health: 100})
-//      : this._(id, name, team ?? playerTeam, new ActorRelationshipMap(),
-//            new Set(), health, initiative == null ? id : initiative);
-//
-//  Actor._(this.id, this.name, this.team, this.safetyFear, this.items,
-//      this.health, this.initiative);
-//
-//  factory Actor.duplicate(Actor other) {
-//    var items =
-//        duplicateSet/*<Item>*/(other.items, (item) => new Item.duplicate(item));
-//    var actor = new Actor._(
-//        other.id,
-//        other.name,
-//        other.team,
-//        new ActorRelationshipMap.duplicate(other.safetyFear),
-//        items,
-//        other.health,
-//        other.initiative);
-//    actor.currentWeapon = other.currentWeapon;
-//    return actor;
-//  }
 
   /// Scores the state of the [world] in the eyes of [this] Actor.
   ///
@@ -169,43 +151,10 @@ abstract class Actor extends Object
   /// differently, and of course the same world will be scored differently
   /// depending on who scores it (if Bob has all the bananas and Alice is
   /// starving, then Bob's score will be higher than Alice's).
-  ///
-  /// By default, actor scores the world according to what he or she currently
-  /// knows about it. Setting [allKnowing] to `true` will override that
-  /// behavior. This is important when gauging the effects of [ActionRecord].
-  /// If Bob destroys a fountain in a location not known to Alice, we still want
-  /// the action record to mark this as something that Alice won't like when
-  /// someone tells her about it later. So, when building the ActionRecord,
-  /// we override the fact that Alice didn't know about the location.
-  ///
-  /// TODO: let author define the actor's character and use it here (optimist,
-  ///       egoist, altruist, ...)
-  num scoreWorld(WorldState world, {bool allKnowing: false}) {
-//    // People want to feel safe.
-//    Iterable<Scale> safetyFeelings = safetyFear.values;
-//    num safetySum = safetyFeelings.fold(0, (prev, el) => prev + el.value);
-//    num safety = safetySum / world.actors.length;
-
-//    // People want to be useful.
-//    var otherActors = world.actors.where((a) => a.id != id);
-//    var othersGratitude = otherActors.map((a) => a.getGratitude(this, world));
-//    num gratitudeSum = othersGratitude.fold(0, (a, b) => a + b);
-//    num gratitude = gratitudeSum / world.actors.length;
-//
-//    // People want luxury
-//    Map<ItemType, num> itemScores = new Map<ItemType, num>();
-//    for (var item in items) {
-//      num runningScore = itemScores.putIfAbsent(item.type, () => 0);
-//      if (item.luxuryIsCumulative) {
-//        itemScores[item.type] = runningScore + item.luxuryScore;
-//      } else {
-//        itemScores[item.type] =
-//            item.luxuryScore > runningScore ? item.luxuryScore : runningScore;
-//      }
-//    }
-//    num luxurySum = itemScores.values.fold(0, (prev, val) => prev + val);
-
-//    return /*safety + */ gratitude + luxurySum;
+  num scoreWorld(WorldState world) {
+    if (worldScoringFunction != null) {
+      return worldScoringFunction(this, world);
+    }
     int score = 0;
     score += 10 * hitpoints;
 
@@ -214,8 +163,6 @@ abstract class Actor extends Object
 
     var enemies = world.actors.where((a) => a.isEnemyOf(this));
     score -= enemies.fold/*<int>*/(0, (sum, a) => sum + a.hitpoints);
-
-//    XXX START HERE - director scores down when repetitive
 
     return score;
   }
@@ -242,7 +189,8 @@ abstract class ActorBuilder implements Builder<Actor, ActorBuilder> {
   bool nameIsProperNoun = true;
   Pronoun pronoun = Pronoun.IT;
   Team team = playerTeam;
-//  ActorRelationshipMap safetyFear;
+  @nullable
+  WorldScoringFunction worldScoringFunction;
 
   factory ActorBuilder() = _$ActorBuilder;
   ActorBuilder._();
@@ -265,52 +213,6 @@ class ActorMap<T> extends CanonicalizedMap<int, Actor, T> {
   bool operator ==(o) => o is ActorMap && hashCode == o.hashCode;
 }
 
-//class Scale implements Comparable<Scale> {
-//  static const num upperBound = 1;
-//  static const num lowerBound = -1;
-//
-//  /// The actual value of the scale.
-//  num get value => _value;
-//  num _value;
-//
-//  Scale(this._value) {
-//    assert(value >= lowerBound && value <= upperBound);
-//  }
-//
-//  Scale.from(Scale other) : this(other.value);
-//
-//  @override
-//  int get hashCode => (value * 100000000).hashCode;
-//
-//  bool operator ==(o) => o is Scale && _value == o.value;
-//
-//  void decrease(num change) {
-//    _value = lowerBound + (_value - lowerBound) * (1 - change);
-//  }
-//
-//  /// Changes the scale so that its [change] percent closer to `1.0`.
-//  ///
-//  /// So if [value] is `0` and we call `increase(0.5)`, we get Scale(0.5). If
-//  /// [value] is `0.5` and we again call `increase(0.5)`, then we get
-//  /// Scale(0.75).
-//  void increase(num change) {
-//    _value = _value + (upperBound - _value) * change;
-//  }
-//
-//  String toString() => "Scale($value)";
-//
-//  @override
-//  int compareTo(Scale other) => value.compareTo(other.value);
-//}
-
-//class ActorRelationshipMap extends ActorMap<Scale> {
-//  ActorRelationshipMap();
-//
-//  factory ActorRelationshipMap.duplicate(ActorRelationshipMap other) {
-//    var map = new ActorRelationshipMap();
-//    other.forEach((Actor key, Scale value) => map[key] = new Scale.from(value));
-//    return map;
-//  }
-//}
+typedef num WorldScoringFunction(Actor actor, WorldState world);
 
 enum Pose { standing, offBalance, onGround }

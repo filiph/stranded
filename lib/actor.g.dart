@@ -23,6 +23,7 @@ class _$Actor extends Actor {
   final bool nameIsProperNoun;
   final Pronoun pronoun;
   final Team team;
+  final WorldScoringFunction worldScoringFunction;
   _$Actor._(
       {this.alreadyMentioned,
       this.categories,
@@ -38,7 +39,8 @@ class _$Actor extends Actor {
       this.name,
       this.nameIsProperNoun,
       this.pronoun,
-      this.team})
+      this.team,
+      this.worldScoringFunction})
       : super._() {
     if (alreadyMentioned == null)
       throw new ArgumentError('null alreadyMentioned');
@@ -77,7 +79,8 @@ class _$Actor extends Actor {
         name == other.name &&
         nameIsProperNoun == other.nameIsProperNoun &&
         pronoun == other.pronoun &&
-        team == other.team;
+        team == other.team &&
+        worldScoringFunction == other.worldScoringFunction;
   }
 
   int get hashCode {
@@ -96,7 +99,8 @@ class _$Actor extends Actor {
       name,
       nameIsProperNoun,
       pronoun,
-      team
+      team,
+      worldScoringFunction
     ]);
   }
 
@@ -117,6 +121,7 @@ class _$Actor extends Actor {
         'nameIsProperNoun=${nameIsProperNoun.toString()}\n'
         'pronoun=${pronoun.toString()}\n'
         'team=${team.toString()}\n'
+        'worldScoringFunction=${worldScoringFunction.toString()}\n'
         '}';
   }
 }
@@ -139,6 +144,7 @@ class _$ActorBuilder extends ActorBuilder {
     super.nameIsProperNoun = other.nameIsProperNoun;
     super.pronoun = other.pronoun;
     super.team = other.team;
+    super.worldScoringFunction = other.worldScoringFunction;
   }
 
   void update(updates(ActorBuilder b)) {
@@ -176,6 +182,7 @@ class _$ActorBuilder extends ActorBuilder {
         name: name,
         nameIsProperNoun: nameIsProperNoun,
         pronoun: pronoun,
-        team: team);
+        team: team,
+        worldScoringFunction: worldScoringFunction);
   }
 }
