@@ -57,6 +57,7 @@ class ActorPlanner {
       Actor actor, WorldState world) sync* {
     yield* world.currentSituation.actions;
     for (var generator in world.currentSituation.actionGenerators) {
+      assert(generator is ActionGenerator);
       yield* generator.build(actor, world);
     }
   }

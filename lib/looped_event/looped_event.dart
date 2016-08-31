@@ -11,8 +11,7 @@ import 'dart:async';
  */
 
 abstract class LoopedEvent /*TODO: implements Saveable ?*/ {
-  LoopedEvent(this._echo, this._goto, this._choices, this.choiceFunction) {
-  }
+  LoopedEvent(this._echo, this._goto, this._choices, this.choiceFunction) {}
 
   final StringTakingVoidFunction _goto;
   final StringTakingVoidFunction _echo;
@@ -36,8 +35,9 @@ abstract class LoopedEvent /*TODO: implements Saveable ?*/ {
    * is finished.
    */
   Future<Null> run() async {
-    if (onFinishedGoto == null) throw new StateError("Cannot run a LoopedEvent "
-        "before onFinishedGoto is defined.");
+    if (onFinishedGoto == null)
+      throw new StateError("Cannot run a LoopedEvent "
+          "before onFinishedGoto is defined.");
     if (finished) {
       _choices.clear();
       _goto(onFinishedGoto);
@@ -57,4 +57,9 @@ abstract class LoopedEvent /*TODO: implements Saveable ?*/ {
 typedef void StringTakingVoidFunction(String arg);
 
 /// Mock of the signature of `choice()` in EgbScripter.
-typedef dynamic ChoiceFunction(String string, {void script()});
+typedef dynamic ChoiceFunction(String string,
+    {String goto,
+    Future<Null> script(),
+    String submenu,
+    bool deferToEndOfPage,
+    bool deferToChoiceList});
