@@ -72,6 +72,8 @@ abstract class SituationBuilder
 
 /// A state of a situation.
 abstract class SituationState {
+  String get name;
+
   int get time;
 
   /// Returns the actor whose turn it is at specified [time].

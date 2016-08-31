@@ -89,6 +89,17 @@ class WorldState {
     situations.removeLast();
   }
 
+  void popSituationsUntil(String situationName) {
+    while (
+        situations.isNotEmpty && situations.last.state.name != situationName) {
+      situations.removeLast();
+    }
+    if (situations.isEmpty) {
+      throw new ArgumentError("Tried to pop situations until $situationName "
+          "but none was found in stack.");
+    }
+  }
+
   /// Returns the index at which the [Situation] with [situationId] resides
   /// in the [situations] list.
   int _findSituationIndex(int situationId) {

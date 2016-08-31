@@ -3,7 +3,6 @@ library stranded.actor;
 import 'package:built_value/built_value.dart';
 import 'package:collection/collection.dart';
 import 'package:quiver/core.dart';
-import 'package:stranded/action_record.dart';
 import 'package:stranded/item.dart';
 import 'package:stranded/storyline/storyline.dart';
 import 'package:stranded/team.dart';
