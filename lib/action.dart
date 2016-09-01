@@ -27,6 +27,8 @@ abstract class ActorAction {
       Actor actor, PlanConsequence current, WorldState world) sync* {
     var successChance = getSuccessChance(actor, current.world);
     assert(successChance != null);
+    assert(successChance >= 0.0);
+    assert(successChance <= 1.0);
 
     if (successChance > 0) {
       var worldCopy = new WorldState.duplicate(world);
@@ -165,7 +167,7 @@ class EnemyTargetActionGenerator extends ActionGenerator {
   final EnemyTargetApplicabilityFunction valid;
   final EnemyTargetActionFunction success;
   final EnemyTargetActionFunction failure;
-  final num chance;
+  final EnemyTargetChanceFunction chance;
 
   EnemyTargetActionGenerator(this.name,
       {@required this.valid,
@@ -196,7 +198,7 @@ class EnemyTargetAction extends ActorAction {
   final EnemyTargetApplicabilityFunction valid;
   final EnemyTargetActionFunction success;
   final EnemyTargetActionFunction failure;
-  final num chance;
+  final EnemyTargetChanceFunction chance;
   final Actor enemy;
 
   EnemyTargetAction(this.name,
@@ -217,9 +219,9 @@ class EnemyTargetAction extends ActorAction {
   @override
   bool get failureModifiesWorld => failure != null;
 
-  // TODO: make this into a callback instead of final variable
   @override
-  num getSuccessChance(Actor actor, WorldState world) => chance;
+  num getSuccessChance(Actor actor, WorldState world) =>
+      chance(actor, enemy, world);
 
   @override
   bool isApplicable(Actor actor, WorldState world) =>
@@ -233,3 +235,6 @@ typedef bool EnemyTargetApplicabilityFunction(
 
 typedef String EnemyTargetActionFunction(
     Actor actor, Actor enemy, WorldState world, Storyline storyline);
+
+typedef num EnemyTargetChanceFunction(
+    Actor actor, Actor enemy, WorldState world);
